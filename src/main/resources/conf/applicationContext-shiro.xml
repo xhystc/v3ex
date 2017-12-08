@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+          http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+    <import resource="classpath:conf/applicationContext-redis.xml"/>
+    <import resource="classpath:conf/applicationContext.xml"/>
+
+    <context:component-scan base-package="com.xhystc.zhihu.shiro"/>
+
+    <!-- shiro filter 配置-->
+    <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
+        <!-- securityManager -->
+        <property name="securityManager" ref="securityManager" />
+        <!-- 登录路径 -->
+        <property name="loginUrl" value="/login" />
+        <!-- 过滤链定义 -->
+        <property name="filterChainDefinitions">
+            <value>
+                /logout=logout
+                /do_comment=roles[user]
+                /publish=roles[user]
+                /service/**==roles[user]
+            </value>
+        </property>
+    </bean>
+
+    <!-- shiro session cookie 配置-->
+    <bean id="sessionIdCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+        <constructor-arg value="mySessionId"/>
+        <property name="httpOnly" value="true"/>
+        <property name="maxAge" value="${shiro.session.maxAge}"/>
+    </bean>
+
+    <!-- shiro rememberme cookie 配置-->
+    <bean id="rememberMeCookie" class="org.apache.shiro.web.servlet.SimpleCookie">
+        <constructor-arg value="rememberMe"/>
+        <property name="httpOnly" value="true"/>
+        <property name="maxAge" value="${shiro.rememberme.timeout}"/><!-- 30天 -->
+    </bean>
+
+    <bean id="rememberMeManager"
+          class="org.apache.shiro.web.mgt.CookieRememberMeManager">
+        <property name="cookie" ref="rememberMeCookie"/>
+    </bean>
+
+
+    <bean id="sessionManager" class="org.apache.shiro.web.session.mgt.DefaultWebSessionManager">
+        <property name="globalSessionTimeout" value="${shiro.session.timeout}"/>
+        <property name="deleteInvalidSessions" value="true"/>
+        <property name="sessionValidationSchedulerEnabled" value="true"/>
+        <property name="sessionIdCookieEnabled" value="true"/>
+        <property name="sessionIdCookie" ref="sessionIdCookie"/>
+        <property name="sessionDAO" ref="RedisSessionDAO"/>
+    </bean>
+    <bean id="credentialsMatcher" class="com.xhystc.zhihu.shiro.RetryLimitHashedCredentialsMatcher">
+        <property name="hashIterations" value="${shiro.hashIterations}"/>
+        <property name="retryTimes" value="${shiro.retryTimes}"/>
+        <property name="interval" value="${shiro.interval}"/>
+        <property name="hashAlgorithmName" value="${shiro.hashAlgorithmName}"/>
+    </bean>
+
+    <bean id="generalRealm" class="com.xhystc.zhihu.shiro.GeneralRealm">
+        <property name="credentialsMatcher" ref="credentialsMatcher"/>
+    </bean>
+    <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">
+        <property name="realm" ref="generalRealm" />
+        <property name="sessionManager" ref="sessionManager"/>
+        <property name="rememberMeManager" ref="rememberMeManager"/>
+    </bean>
+
+
+    <bean id="lifecycleBeanPostProcessor" class="org.apache.shiro.spring.LifecycleBeanPostProcessor" />
+
+</beans>
+
+
+
+
+
+
+
+

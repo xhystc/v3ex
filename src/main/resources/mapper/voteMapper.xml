@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.xhystc.zhihu.dao.VoteDao">
+    <resultMap id="voteResultMap" type="com.xhystc.zhihu.model.Vote">
+        <id column="user_id" property="userId"/>
+        <id column="parent_id" property="parentId"/>
+        <id column="parent_type" property="parentType"/>
+    </resultMap>
+
+    <select id="selectVotes" parameterType="com.xhystc.zhihu.model.Vote" resultMap="voteResultMap">
+        SELECT * from vote
+        <where>
+            <if test="userId != null">
+                user_id = #{userId}
+            </if>
+            <if test="parentType != null">
+                and parent_type = #{parentType}
+            </if>
+            <if test="parentId != null">
+                and parent_id = #{parentId}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertVote" parameterType="com.xhystc.zhihu.model.Vote">
+        INSERT INTO vote(user_id, parent_id, parent_type)
+                VALUES (#{userId},#{parentId},#{parentType})
+    </insert>
+
+    <delete id="deleteVote" parameterType="com.xhystc.zhihu.model.Vote">
+        DELETE FROM vote WHERE user_id = #{userId} AND parent_id = #{parentId} AND parent_type = #{parentType}
+    </delete>
+    <select id="getUserVotes" parameterType="java.lang.Long" resultMap="voteResultMap">
+        SELECT * FROM vote WHERE user_id = #{_parameter};
+    </select>
+
+
+
+</mapper>
+
+
+
+
+
+

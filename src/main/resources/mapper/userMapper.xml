@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="com.xhystc.zhihu.dao.UserDao">
+    <resultMap id="userResultMap" type="com.xhystc.zhihu.model.User">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="password" property="password"/>
+        <result column="email" property="email"/>
+        <result column="iconUrl" property="iconUrl"/>
+        <result column="salt" property="salt"/>
+        <result column="is_locked" property="isLocked"/>
+        <result column="regist_date" property="registDate"/>
+    </resultMap>
+
+
+    <select id="getUserById" parameterType="java.lang.Long" resultMap="userResultMap">
+        select * from user u where u.id = #{_parameter}
+    </select>
+    <select id="getUserByName" parameterType="java.lang.String" resultMap="userResultMap">
+        select * from user u where u.name = #{_parameter}
+    </select>
+
+
+    <insert id="insertUser" parameterType="com.xhystc.zhihu.model.User" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO user(name, password, regist_date, email, iconUrl, salt)
+        VALUES (#{name},#{password},#{registDate},#{email},#{iconUrl},#{salt})
+    </insert>
+    <delete id="deleteUserById" parameterType="java.lang.Long">
+        DELETE FROM user WHERE id = #{_parameter}
+    </delete>
+
+    <update id="updateUser" parameterType="com.xhystc.zhihu.model.User">
+        UPDATE user SET name = #{name},password = #{password},email = #{email},iconUrl = #{iconUrl},salt = #{salt},is_locked = #{isLocked}
+        ,regist_date = #{registDate}
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectUsers" parameterType="com.xhystc.zhihu.model.vo.query.QuestionQueryCondition" resultMap="userResultMap">
+        SELECT * FROM user
+        <where>
+            <if test="username != null">
+                or name = #{username}
+            </if>
+            <if test="email != null">
+                or email = #{email}
+            </if>
+            <if test="ids != null">
+                or id in
+                <foreach collection="ids" item="uid" open="(" close=")" separator=",">
+                    #{uid}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+</mapper>
+
+
+
+
+
+

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xhystc.zhihu.dao.MessageDao">
+    <resultMap id="messageResultMapper" type="com.xhystc.zhihu.model.Message">
+        <id column="id" property="id"/>
+        <result column="content" property="content"/>
+        <result column="send_date" property="sendDate"/>
+        <result column="is_read" property="isRead"/>
+        <association property="from" column="from_id" javaType="com.xhystc.zhihu.model.User" >
+            <id column="from_id" property="id"/>
+            <result column="from_name" property="name"/>
+            <result column="from_password" property="password"/>
+            <result column="from_email" property="email"/>
+            <result column="from_iconUrl" property="iconUrl"/>
+            <result column="from_salt" property="salt"/>
+            <result column="from_is_locked" property="isLocked"/>
+            <result column="from_regist_date" property="registDate"/>
+        </association>
+        <association property="to" column="to_id" javaType="com.xhystc.zhihu.model.User">
+            <id column="to_id" property="id"/>
+            <result column="to_name" property="name"/>
+            <result column="to_password" property="password"/>
+            <result column="to_email" property="email"/>
+            <result column="to_iconUrl" property="iconUrl"/>
+            <result column="to_salt" property="salt"/>
+            <result column="to_is_locked" property="isLocked"/>
+            <result column="to_regist_date" property="registDate"/>
+        </association>
+    </resultMap>
+
+    <!--mybatis 无法区分同名的列太坑了！！！！！！！！！！！！！！！！！！！-->
+    <select id="getMessageById" parameterType="java.lang.Long" resultMap="messageResultMapper">
+        select
+        m.*,
+        u1.id as from_id,u1.regist_date AS from_regist_date,u1.name AS  from_name,u1.email AS from_email,u1.iconUrl AS from_iconUrl,u1.password AS from_password,u1.salt AS from_salt,u1.is_locked AS from_is_locked,
+        u2.id as to_id,u2.regist_date  AS to_regist_date,u2.name AS to_name,u2.email AS to_email,u2.iconUrl AS to_iconUrl,u2.password AS to_password,u2.salt AS to_salt,u2.is_locked AS to_is_locked
+        from message m LEFT JOIN user u1 on m.from_id=u1.id LEFT JOIN user u2 on m.to_id =u2.id where m.id = #{_parameter}
+    </select>
+
+    <insert id="insertMessage" parameterType="com.xhystc.zhihu.model.Message"  useGeneratedKeys="true" keyProperty="id" >
+        INSERT INTO message(from_id, to_id, content,send_date)
+        VALUES (#{from.id},#{to.id},#{content},#{sendDate})
+    </insert>
+    <delete id="deleteMessageById" parameterType="java.lang.Long">
+        DELETE FROM message WHERE id = #{_parameter}
+    </delete>
+
+    <update id="updateMessage" parameterType="com.xhystc.zhihu.model.Message">
+        UPDATE message SET from_id = #{from.id},to_id = #{to.id},content = #{content},is_read = #{isRead},send_date=#{sendDate}
+        WHERE id = #{id}
+    </update>
+
+    <select id="selectMessages" parameterType="com.xhystc.zhihu.model.vo.query.MessageQueryCondition" resultMap="messageResultMapper">
+        select
+        m.*,
+        u1.id as from_id,u1.regist_date AS from_regist_date,u1.name AS  from_name,u1.email AS from_email,u1.iconUrl AS from_iconUrl,u1.password AS from_password,u1.salt AS from_salt,u1.is_locked AS from_is_locked,
+        u2.id as to_id,u2.regist_date  AS to_regist_date,u2.name AS to_name,u2.email AS to_email,u2.iconUrl AS to_iconUrl,u2.password AS to_password,u2.salt AS to_salt,u2.is_locked AS to_is_locked
+        FROM message m LEFT JOIN user u1 on m.from_id=u1.id LEFT JOIN user u2 on m.to_id =u2.id
+        <where>
+            <if test="fromId != null">
+                from_id = #{fromId}
+            </if>
+            <if test="toId != null">
+                and to_id = #{toId}
+            </if>
+            <if test="sendDate != null">
+                and send_date >= #{sendDate}
+            </if>
+            <if test="isRead != null">
+                and is_read = #{isRead}
+            </if>
+
+        </where>
+        ORDER BY send_date DESC
+    </select>
+
+    <select id="countUnreaded" parameterType="java.lang.Long" resultType="int">
+        SELECT count(*) FROM message WHERE to_id = #{_parameter} and is_read = 0;
+    </select>
+    <update id="readAll" parameterType="java.lang.Long">
+        UPDATE message SET is_read = 1 WHERE to_id = #{arg0}
+    </update>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+

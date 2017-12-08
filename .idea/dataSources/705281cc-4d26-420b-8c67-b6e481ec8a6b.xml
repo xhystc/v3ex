@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataSource name="zhihu@localhost">
+  <database-model serializer="dbm" rdbms="MYSQL" format-version="4.4">
+    <root id="1"/>
+    <schema id="2" parent="1" name="zhihu">
+      <Current>1</Current>
+      <Visible>1</Visible>
+    </schema>
+    <schema id="3" parent="1" name="airport"/>
+    <schema id="4" parent="1" name="airticket"/>
+    <schema id="5" parent="1" name="diagnosis"/>
+    <schema id="6" parent="1" name="hotone"/>
+    <schema id="7" parent="1" name="information_schema"/>
+    <schema id="8" parent="1" name="j2eeshiyan3"/>
+    <schema id="9" parent="1" name="jtatest"/>
+    <schema id="10" parent="1" name="mysql"/>
+    <schema id="11" parent="1" name="performance_schema"/>
+    <schema id="12" parent="1" name="self_diagnosis"/>
+    <schema id="13" parent="1" name="sys"/>
+    <schema id="14" parent="1" name="temhumtest"/>
+    <table id="15" parent="2" name="comment"/>
+    <table id="16" parent="2" name="message"/>
+    <table id="17" parent="2" name="question"/>
+    <table id="18" parent="2" name="user"/>
+    <table id="19" parent="2" name="vote"/>
+    <column id="20" parent="15" name="id">
+      <Position>1</Position>
+      <DataType>int(11)|0</DataType>
+      <NotNull>1</NotNull>
+      <SequenceIdentity>1</SequenceIdentity>
+    </column>
+    <column id="21" parent="15" name="user_id">
+      <Position>2</Position>
+      <DataType>int(11)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="22" parent="15" name="parent_type">
+      <Position>3</Position>
+      <DataType>varchar(25)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="23" parent="15" name="parent_id">
+      <Position>4</Position>
+      <DataType>int(11)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="24" parent="15" name="content">
+      <Position>5</Position>
+      <DataType>text|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="25" parent="15" name="comment_count">
+      <Position>6</Position>
+      <DataType>int(11)|0</DataType>
+      <DefaultExpression>&apos;0&apos;</DefaultExpression>
+    </column>
+    <column id="26" parent="15" name="send_date">
+      <Position>7</Position>
+      <DataType>datetime|0</DataType>
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+    </column>
+    <column id="27" parent="15" name="agree">
+      <Position>8</Position>
+      <DataType>int(11)|0</DataType>
+      <DefaultExpression>&apos;0&apos;</DefaultExpression>
+    </column>
+    <index id="28" parent="15" name="comment_agree_index">
+      <ColNames>agree</ColNames>
+    </index>
+    <index id="29" parent="15" name="comment_id_uindex">
+      <ColNames>id</ColNames>
+      <Unique>1</Unique>
+    </index>
+    <index id="30" parent="15" name="comment_parent_id_index">
+      <ColNames>parent_id</ColNames>
+    </index>
+    <key id="31" parent="15" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+    </key>
+    <key id="32" parent="15" name="comment_id_uindex">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>comment_id_uindex</UnderlyingIndexName>
+    </key>
+    <column id="33" parent="16" name="id">
+      <Position>1</Position>
+      <DataType>int(11)|0</DataType>
+      <NotNull>1</NotNull>
+      <SequenceIdentity>1</SequenceIdentity>
+    </column>
+    <column id="34" parent="16" name="from_id">
+      <Position>2</Position>
+      <DataType>int(11)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="35" parent="16" name="to_id">
+      <Position>3</Position>
+      <DataType>int(11)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="36" parent="16" name="content">
+      <Position>4</Position>
+      <DataType>varchar(25)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="37" parent="16" name="send_date">
+      <Position>5</Position>
+      <DataType>timestamp|0</DataType>
+      <NotNull>1</NotNull>
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+    </column>
+    <column id="38" parent="16" name="is_read">
+      <Position>6</Position>
+      <DataType>tinyint(4)|0</DataType>
+      <DefaultExpression>&apos;0&apos;</DefaultExpression>
+    </column>
+    <index id="39" parent="16" name="Message_id_uindex">
+      <ColNames>id</ColNames>
+      <Unique>1</Unique>
+    </index>
+    <index id="40" parent="16" name="message_send_date_index">
+      <ColNames>send_date</ColNames>
+    </index>
+    <key id="41" parent="16" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+    </key>
+    <key id="42" parent="16" name="Message_id_uindex">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>Message_id_uindex</UnderlyingIndexName>
+    </key>
+    <column id="43" parent="17" name="id">
+      <Position>1</Position>
+      <DataType>int(11)|0</DataType>
+      <NotNull>1</NotNull>
+      <SequenceIdentity>1</SequenceIdentity>
+    </column>
+    <column id="44" parent="17" name="user_id">
+      <Position>2</Position>
+      <DataType>int(11)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="45" parent="17" name="title">
+      <Position>3</Position>
+      <DataType>text|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="46" parent="17" name="content">
+      <Position>4</Position>
+      <DataType>text|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="47" parent="17" name="create_date">
+      <Position>5</Position>
+      <DataType>datetime|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="48" parent="17" name="comment_count">
+      <Position>6</Position>
+      <DataType>int(11)|0</DataType>
+      <NotNull>1</NotNull>
+      <DefaultExpression>&apos;0&apos;</DefaultExpression>
+    </column>
+    <column id="49" parent="17" name="active_time">
+      <Position>7</Position>
+      <DataType>datetime|0</DataType>
+      <NotNull>1</NotNull>
+      <DefaultExpression>CURRENT_TIMESTAMP</DefaultExpression>
+    </column>
+    <column id="50" parent="17" name="agree">
+      <Position>8</Position>
+      <DataType>int(11)|0</DataType>
+      <DefaultExpression>&apos;0&apos;</DefaultExpression>
+    </column>
+    <index id="51" parent="17" name="question_active_time_index">
+      <ColNames>active_time</ColNames>
+    </index>
+    <index id="52" parent="17" name="question_agree_index">
+      <ColNames>agree</ColNames>
+    </index>
+    <index id="53" parent="17" name="question_id_uindex">
+      <ColNames>id</ColNames>
+      <Unique>1</Unique>
+    </index>
+    <key id="54" parent="17" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+    </key>
+    <key id="55" parent="17" name="question_id_uindex">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>question_id_uindex</UnderlyingIndexName>
+    </key>
+    <column id="56" parent="18" name="id">
+      <Position>1</Position>
+      <DataType>int(11)|0</DataType>
+      <NotNull>1</NotNull>
+      <SequenceIdentity>1</SequenceIdentity>
+    </column>
+    <column id="57" parent="18" name="name">
+      <Position>2</Position>
+      <DataType>varchar(64)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="58" parent="18" name="password">
+      <Position>3</Position>
+      <DataType>varchar(128)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="59" parent="18" name="regist_date">
+      <Position>4</Position>
+      <DataType>date|0</DataType>
+    </column>
+    <column id="60" parent="18" name="email">
+      <Position>5</Position>
+      <DataType>varchar(128)|0</DataType>
+    </column>
+    <column id="61" parent="18" name="iconUrl">
+      <Position>6</Position>
+      <DataType>varchar(64)|0</DataType>
+    </column>
+    <column id="62" parent="18" name="salt">
+      <Position>7</Position>
+      <DataType>varchar(128)|0</DataType>
+    </column>
+    <column id="63" parent="18" name="is_locked">
+      <Position>8</Position>
+      <DataType>tinyint(1)|0</DataType>
+      <DefaultExpression>&apos;0&apos;</DefaultExpression>
+    </column>
+    <index id="64" parent="18" name="id_UNIQUE">
+      <ColNames>id</ColNames>
+      <Unique>1</Unique>
+    </index>
+    <index id="65" parent="18" name="name_UNIQUE">
+      <ColNames>name</ColNames>
+      <Unique>1</Unique>
+    </index>
+    <index id="66" parent="18" name="user_email_index">
+      <ColNames>email</ColNames>
+      <Unique>1</Unique>
+    </index>
+    <key id="67" parent="18" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <ColNames>id</ColNames>
+      <Primary>1</Primary>
+    </key>
+    <key id="68" parent="18" name="id_UNIQUE">
+      <ColNames>id</ColNames>
+      <UnderlyingIndexName>id_UNIQUE</UnderlyingIndexName>
+    </key>
+    <key id="69" parent="18" name="name_UNIQUE">
+      <ColNames>name</ColNames>
+      <UnderlyingIndexName>name_UNIQUE</UnderlyingIndexName>
+    </key>
+    <key id="70" parent="18" name="user_email_index">
+      <ColNames>email</ColNames>
+      <UnderlyingIndexName>user_email_index</UnderlyingIndexName>
+    </key>
+    <column id="71" parent="19" name="user_id">
+      <Position>1</Position>
+      <DataType>int(11)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="72" parent="19" name="parent_id">
+      <Position>2</Position>
+      <DataType>int(11)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <column id="73" parent="19" name="parent_type">
+      <Position>3</Position>
+      <DataType>varchar(25)|0</DataType>
+      <NotNull>1</NotNull>
+    </column>
+    <key id="74" parent="19" name="PRIMARY">
+      <NameSurrogate>1</NameSurrogate>
+      <ColNames>user_id
+parent_id
+parent_type</ColNames>
+      <Primary>1</Primary>
+    </key>
+  </database-model>
+</dataSource>

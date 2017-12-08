@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xhystc.zhihu.dao.QuestionDao">
+    <resultMap id="questionResultMap" type="com.xhystc.zhihu.model.Question">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="content" property="content"/>
+        <result column="create_date" property="createDate"/>
+        <result column="comment_count" property="commentCount"/>
+        <result column="active_time" property="activeTime"/>
+        <result column="agree" property="agree"/>
+        <association property="user" javaType="com.xhystc.zhihu.model.User" column="user_id">
+            <id column="uid" property="id"/>
+            <result column="name" property="name"/>
+            <result column="password" property="password"/>
+            <result column="email" property="email"/>
+            <result column="iconUrl" property="iconUrl"/>
+            <result column="salt" property="salt"/>
+            <result column="is_locked" property="isLocked"/>
+            <result column="regist_date" property="registDate"/>
+        </association>
+    </resultMap>
+
+    <select id="getQuestionById" parameterType="java.lang.Long" resultMap="questionResultMap">
+        select q.*,u.*,u.id AS uid from question q LEFT JOIN user u on q.user_id=u.id where q.id = #{_parameter}
+    </select>
+
+    <insert id="insertQuestion" parameterType="com.xhystc.zhihu.model.Question"  useGeneratedKeys="true" keyProperty="id"  >
+        INSERT INTO question(user_id, title, content, create_date)
+        VALUES (#{user.id},#{title},#{content},#{createDate})
+    </insert>
+    <delete id="deleteQuestionById" parameterType="java.lang.Long">
+        DELETE FROM question WHERE id = #{_parameter}
+    </delete>
+
+    <update id="updateQuestion" parameterType="com.xhystc.zhihu.model.Question">
+        UPDATE question SET user_id = #{user.id},title = #{title},content = #{content},create_date = #{createDate}
+        WHERE id = #{id}
+    </update>
+
+    <update id="increaseComment" parameterType="java.lang.Long">
+        UPDATE question SET comment_count = comment_count+1,active_time = current_timestamp
+        WHERE id = #{_parameter}
+    </update>
+
+
+    <update id="increaseAgree" >
+        UPDATE question SET agree = agree+#{arg1}
+        WHERE id = #{arg0}
+    </update>
+
+    <update id="setAgree" >
+        UPDATE question SET agree = #{arg1}
+        WHERE id = #{arg0}
+    </update>
+
+
+    <select id="selectQuestions" parameterType="com.xhystc.zhihu.model.vo.query.QuestionQueryCondition" resultMap="com.xhystc.zhihu.dao.QuestionDao.questionResultMap">
+        SELECT  q.*,u.*,u.id AS uid FROM question q LEFT JOIN user  u ON q.user_id = u.id
+        <where>
+            <if test="userId != null">
+                user_id = #{userId}
+            </if>
+            <if test="createDate != null">
+                and create_date >= #{createDate}
+            </if>
+            <if test="ruleOut !=null">
+                and q.id NOT IN
+                <foreach collection="ruleOut" item="outId" open="(" close=")" separator=",">
+                    #{outId}
+                </foreach>
+            </if>
+            <if test="ids != null">
+                and q.id in
+                <foreach collection="ids" item="qid" open="(" close=")" separator=",">
+                    #{qid}
+                </foreach>
+            </if>
+        </where>
+        ORDER BY
+        <choose>
+            <when test="orderBy !=null ">
+                ${orderBy}, active_time
+            </when>
+            <otherwise>
+                active_time
+            </otherwise>
+        </choose>
+        <choose>
+            <when test="order !=null ">
+                ${order}
+            </when>
+            <otherwise>
+                DESC
+            </otherwise>
+        </choose>
+        LIMIT
+        <choose>
+            <when test="offset >=0 and rows>0">
+                 ${offset},${rows}
+            </when>
+            <otherwise>
+                 0,20
+            </otherwise>
+        </choose>
+
+    </select>
+
+    <select id="total" parameterType="com.xhystc.zhihu.model.vo.query.QuestionQueryCondition" resultType="int">
+        SELECT count(*) FROM question
+        <where>
+            <if test="userId != null">
+                user_id = #{userId}
+            </if>
+            <if test="createDate != null">
+                create_date >= #{createDate}
+            </if>
+            <if test="ruleOut !=null">
+                q.id NOT IN
+                <foreach collection="ruleOut" item="outId" open="(" close=")" separator=",">
+                    #{outId}
+                </foreach>
+            </if>
+        </where>
+    </select>
+</mapper>
+
+
+
+
+
+
