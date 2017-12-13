@@ -1,3 +1,4 @@
+/*
 package com.xhystc.zhihu.rediscache;
 
 import com.xhystc.zhihu.commons.RedisUtils;
@@ -99,3 +100,4 @@ public class TimeoutEventManager extends TimerTask
 		this.type = type;
 	}
 }
+*/

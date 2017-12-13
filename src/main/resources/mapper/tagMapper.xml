@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xhystc.zhihu.dao.TagDao">
+    <resultMap id="tagResultMap" type="com.xhystc.zhihu.model.Tag">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="icon" property="icon"/>
+        <result column="description" property="description"/>
+        <result column="count" property="count"/>
+    </resultMap>
+
+    <insert id="insertTag" parameterType="com.xhystc.zhihu.model.Tag" keyProperty="id" useGeneratedKeys="true">
+        INSERT INTO tag(name,description,icon,count)
+        VALUES (#{name},#{description},#{icon},#{count})
+    </insert>
+    <update id="increaseCount" >
+        UPDATE tag SET count = count+1 WHERE id in
+        <foreach collection="list" item="t_id" open="(" close=")" separator=",">
+            #{t_id}
+        </foreach>
+    </update>
+
+    <delete id="deleteTag">
+        DELETE FROM tag WHERE id = #{arg0}
+    </delete>
+    <select id="selectAll" resultMap="tagResultMap">
+        SELECT * FROM tag;
+    </select>
+    <select id="selectTagsByName" resultType="com.xhystc.zhihu.model.Tag">
+        SELECT * FROM tag WHERE name like '${_parameter}%'
+    </select>
+</mapper>

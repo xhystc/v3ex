@@ -2,18 +2,19 @@ package com.xhystc.zhihu.model.vo.page;
 
 import com.xhystc.zhihu.model.Comment;
 import com.xhystc.zhihu.model.Question;
+import com.xhystc.zhihu.model.Tag;
 
 import java.util.List;
 
 public class CommentPage
 {
-	List<Comment> comments;
-	Question question;
-	int currentPage;
-	int lastPage;
-	List<Integer> pageButtons;
-	boolean questionVote;
-	boolean isVoted;
+	private List<Comment> comments;
+	private Question question;
+	private int currentPage;
+	private int lastPage;
+	private List<Integer> pageButtons;
+	private boolean isVoted;
+	private List<Tag> tags;
 
 	public List<Comment> getComments()
 	{
@@ -65,15 +66,6 @@ public class CommentPage
 		this.pageButtons = pageButtons;
 	}
 
-	public boolean getQuestionVote()
-	{
-		return questionVote;
-	}
-
-	public void setQuestionVote(boolean questionVote)
-	{
-		this.questionVote = questionVote;
-	}
 
 	public boolean getIsVoted()
 	{
@@ -83,6 +75,16 @@ public class CommentPage
 	public void setIsVoted(boolean voted)
 	{
 		isVoted = voted;
+	}
+
+	public List<Tag> getTags()
+	{
+		return tags;
+	}
+
+	public void setTags(List<Tag> tags)
+	{
+		this.tags = tags;
 	}
 }
 

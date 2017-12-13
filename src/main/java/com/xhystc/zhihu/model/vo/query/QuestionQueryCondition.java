@@ -12,7 +12,8 @@ public class QuestionQueryCondition
 	private String orderBy;
 	private int offset;
 	private int rows;
-	private Set<Long> ruleOut;
+	private Long tagId;
+
 
 	public Long getUserId()
 	{
@@ -75,11 +76,6 @@ public class QuestionQueryCondition
 		return createDate;
 	}
 
-	public void setRuleOut(Set<Long> ruleOut)
-	{
-		this.ruleOut = ruleOut;
-	}
-
 	public Set<Long> getIds()
 	{
 		return ids;
@@ -88,6 +84,16 @@ public class QuestionQueryCondition
 	public void setIds(Set<Long> ids)
 	{
 		this.ids = ids;
+	}
+
+	public Long getTagId()
+	{
+		return tagId;
+	}
+
+	public void setTagId(Long tagId)
+	{
+		this.tagId = tagId;
 	}
 }
 

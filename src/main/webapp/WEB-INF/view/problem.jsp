@@ -11,7 +11,9 @@
     <ul>
        <c:forEach items="${problems}" var="problem">
            <li>
-               ${problem.value}&nbsp;&nbsp;
+               <c:if test="${not empty problem.value}">
+                   ${problem.value}&nbsp;&nbsp;
+               </c:if>
                <strong>${problem.reason}</strong>
            </li>
        </c:forEach>

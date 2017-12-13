@@ -15,7 +15,7 @@ import java.util.Set;
 
 public interface QuestionCommentService
 {
-	List<Question> getQuestionItems(int page,int pageSize);
+	List<Question> getQuestionItems(int page,int pageSize,Long tagid);
 	Set<Problem> publishQuestion(User user, QuestionForm form);
 	List<Comment> getCommentItems(CommentQueryCondition condition);
 	CommentPage commentPage(Long questionId,int page,int pageSize);

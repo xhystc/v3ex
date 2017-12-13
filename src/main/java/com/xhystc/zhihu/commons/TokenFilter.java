@@ -32,12 +32,14 @@ public class TokenFilter implements Filter
 
 		String path = request.getServletPath();
 
+
 		for(String s : excludedPrefix){
-			if (path.startsWith(s)){
+			if (path.startsWith(s) || path.contains("service")){
 				filterChain.doFilter(servletRequest,servletResponse);
 				return;
 			}
 		}
+
 		if(tokenPath.contains(path)){
 			if(!validateToken(request.getParameter(tokenParam),session)){
 				response.sendRedirect(redirect);

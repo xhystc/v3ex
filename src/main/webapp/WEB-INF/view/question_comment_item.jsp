@@ -7,18 +7,25 @@
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <c:forEach items="${commentPage.comments}" var="comment">
-    <div id="r_5031457" class="cell">
+    <div id="comment-item-${comment.id}" class="cell">
         <table width="100%" cellspacing="0" cellpadding="0" border="0">
             <tbody><tr>
                 <td align="center" width="48" valign="top">
-                    <img src="${path}/${comment.user.iconUrl}" class="avatar" align="default" border="0">
+                    <img src="${path}/${comment.user.iconUrl}" class="avatar" align="default" border="0" style="width: 48px;height: 48px"  >
                 </td>
                 <td width="10" valign="top"></td>
                 <td align="left" width="auto" valign="top">
-                    <div class="fr"><div id="thank_area_5031457" class="thank_area">
-                        <a href="#;" onclick="if (confirm('确认花费 10 个铜币向 @EmmaYang 的这条回复发送感谢？')) { thankReply(5031457, 'hnqqkodjbmnmhdrlcxbdflluaasqmrxo'); }" class="thank">点赞</a></div> &nbsp;
+                    <div class="fr">
+                        <div id="thank_area_5031457" class="thank_area">
+                            <a href="#;" onclick="dovote('comment',${comment.id})" class="thank">支持</a>
+                        </div> &nbsp;
                         <a href="#;" onclick="replyOne('EmmaYang');"><img src="//cdn.v2ex.com/static/img/reply.png" alt="Reply" align="absmiddle" border="0"></a> &nbsp;&nbsp;
-                        <span class="no">${comment.agree}</span>
+                        <span  id="comment-item-agree-${comment.id}" class="no
+                         <c:if test='${comment.isVoted}'>
+                             voted
+                         </c:if>
+                        ">${comment.voteInform.voteCount}
+                        </span>
                     </div>
                     <div class="sep3"></div>
                     <strong><a href="/user/${comment.user.id}" class="dark">${comment.user.name}</a></strong>&nbsp; &nbsp;

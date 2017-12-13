@@ -20,6 +20,7 @@
             <%@include file="problem.jsp"%>
         </c:if>
         <form method="post" action="${path}/publish" id="compose">
+            <input name="formToken" value="${formToken}" hidden>
             <div class="cell"><div class="fr fade" id="title_remaining">120</div>
                 主题标题
             </div>
@@ -31,19 +32,18 @@
                 <textarea name="content" style="resize: none; width: 753px;height:293px;"></textarea>
             </div>
             <div class="cell">
-                <select name="tag" id="nodes" style="width: 300px; font-size: 14px; display: none;" data-placeholder="请选择一个标签">
+                <select name="tags" id="nodes" style="width: 300px; font-size: 14px;" multiple data-placeholder="请选择一个标签">
                     <option></option>
-                    <option value="2015">node / test</option>
-                </select><div class="select2-container" style="width: 300px">
-                <a href="javascript:void(0)" class="select2-choice">   <span>MacBook Pro / mbp</span><abbr class="select2-search-choice-close" style="display:none;"></abbr>   <div><b></b></div></a>    <div class="select2-drop select2-offscreen">   <div class="select2-search">       <input type="text" autocomplete="off" class="select2-input">   </div>   <ul class="select2-results">   </ul></div></div>
-            </div>
-            <input name="formToken" value="${formToken}" hidden>
-            <div class="cell">
+                    <c:forEach items="${tags}" var="tag">
+                        <option value="${tag.id}">${tag.name}</option>
+                    </c:forEach>
+                </select>
                 <div class="fr">
                 <span id="error_message"></span> &nbsp;
                 <input type="submit" class="super normal button"> &nbsp;发布主题</input>
+                </div>
+
             </div>
-    </div>
         </form>
 
     </div>

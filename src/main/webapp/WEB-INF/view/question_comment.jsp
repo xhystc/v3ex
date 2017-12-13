@@ -14,7 +14,7 @@
                 <%@include file="/WEB-INF/view/question_inform.jsp"%>
                 <%@include file="/WEB-INF/view/question_comment_item.jsp"%>
                 <c:choose>
-                    <c:when test="${question.commentCount gt 20}">
+                    <c:when test="${commentPage.question.commentCount gt 20}">
                         <%@include file="/WEB-INF/view/question_pagebutton.jsp"%>
                     </c:when>
                 </c:choose>

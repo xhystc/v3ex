@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)  //使用junit4进行测试
-@ContextConfiguration(locations = {"classpath:applicationContext.xml", "classpath:applicationContext-mybatis.xml"})
+@ContextConfiguration(locations = {"classpath:conf/applicationContext.xml", "classpath:conf/applicationContext-mybatis.xml"})
 public class CommentDaoTest
 {
 	@Autowired
@@ -66,13 +66,7 @@ public class CommentDaoTest
 		commentDao.insertComment(comment);
 	}
 
-	@Transactional(rollbackFor = Exception.class)
-	@Rollback(false)
-	@Test
-	public void increaseComment() throws Exception
-	{
-		commentDao.increaseComment(2L);
-	}
+
 
 	@Transactional(rollbackFor = Exception.class)
 	@Rollback(false)

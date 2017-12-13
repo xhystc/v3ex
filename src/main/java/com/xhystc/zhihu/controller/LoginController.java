@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -52,7 +51,7 @@ public class LoginController
 	{
 		logger.info("user:"+form.getUsername()+" login");
 
-		FormUtils.escapeHTML(form);
+		FormUtils.escapeFormModle(form);
 		UsernamePasswordToken usernamePasswordToken = new UsernamePasswordToken(form.getUsername(),form.getPassword());
 		Subject subject = SecurityUtils.getSubject();
 		List<Problem> problems = new ArrayList<>(3);
@@ -89,7 +88,7 @@ public class LoginController
 			return "redirect:/index";
 		}
 		model.addAttribute("problems",problems);
-		return "login";
+		return login(session,model);
 	}
 
 	@RequestMapping("/logout")
@@ -100,22 +99,21 @@ public class LoginController
 	}
 
 	@RequestMapping("/do_regist")
-	public String regist(@Valid UserRegistForm form, Errors errors, Model mv,HttpSession session){
+	public String doRegist(@Valid UserRegistForm form, Errors errors, Model mv,HttpSession session){
 
-		String error = FormUtils.handleErrors(mv,errors);
-		if(error!=null)
+		if(FormUtils.handleErrors(mv,errors))
 		{
-			return error;
+			return regist();
 		}
 
-		FormUtils.escapeHTML(form);
+		FormUtils.escapeFormModle(form);
 		Set<Problem> problems = userService.userRegist(form);
 		if(problems==null || problems.size() == 0){
 			return "redirect:/index";
 		}
 		logger.info("username or email exist error");
 		mv.addAttribute("problems",problems);
-		return "regist";
+		return regist();
 	}
 
 	@RequestMapping("/doregist/username_check")

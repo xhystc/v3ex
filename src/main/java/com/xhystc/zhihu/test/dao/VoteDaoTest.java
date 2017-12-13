@@ -2,6 +2,7 @@ package com.xhystc.zhihu.test.dao;
 
 import com.xhystc.zhihu.dao.VoteDao;
 import com.xhystc.zhihu.model.Vote;
+import com.xhystc.zhihu.model.vo.query.VoteQueryCondition;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,12 +11,13 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
 
 import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)  //使用junit4进行测试
-@ContextConfiguration(locations = {"classpath:applicationContext.xml", "classpath:applicationContext-mybatis.xml"})
+@ContextConfiguration(locations = {"classpath:conf/applicationContext.xml", "classpath:conf/applicationContext-mybatis.xml"})
 
 public class VoteDaoTest
 {
@@ -27,13 +29,19 @@ public class VoteDaoTest
 	@Test
 	public void selectVote() throws Exception
 	{
-		Vote vote = new Vote();
-		vote.setParentId(1L);
-		vote.setUserId(4L);
-		vote.setParentType("question");
+		VoteQueryCondition condition = new VoteQueryCondition();
+		condition.setInclude(new HashSet<>());
+		/*condition.getInclude().add(37L);
+		condition.getInclude().add(39L);
+		condition.getInclude().add(38L);
+		condition.getInclude().add(50L);
+		condition.setUserId(38L);*/
+		condition.setParentType("question");
 
-		List<Vote> v = voteDao.selectVotes(vote);
-		System.out.println(v.get(0).getUserId());
+		List<Vote> vs = voteDao.selectVotes(condition);
+		for(Vote v : vs){
+			System.out.println(v.getParentType()+":"+v.getParentId());
+		}
 	}
 
 	@Transactional(rollbackFor = Exception.class)
@@ -73,7 +81,7 @@ public class VoteDaoTest
 	}
 
 
-	@Transactional(rollbackFor = Exception.class)
+	/*@Transactional(rollbackFor = Exception.class)
 	@Rollback(false)
 	@Test
 	public void getQuestionUsers(){
@@ -81,7 +89,7 @@ public class VoteDaoTest
 		for(Long vote : users){
 			System.out.println(vote);
 		}
-	}
+	}*/
 
 }
 

@@ -2,6 +2,7 @@ package com.xhystc.zhihu.commons;
 
 import com.xhystc.zhihu.model.User;
 import com.xhystc.zhihu.model.vo.json.Problem;
+import com.youbenzi.mdtool.tool.MDTool;
 import org.apache.shiro.SecurityUtils;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -30,10 +31,7 @@ public class FormUtils
 		SecurityUtils.getSubject().getSession().setAttribute("currentUser",user);
 	}
 
-
-
-
-	public static void escapeHTML(Object o){
+	public static void escapeFormModle(Object o){
 		Class clazz = o.getClass();
 		Field[] fields = clazz.getDeclaredFields();
 		for(Field field : fields){
@@ -51,14 +49,16 @@ public class FormUtils
 					continue;
 				}
 				String s = (String)getMethod.invoke(o);
+
 				Markdown markdown = field.getAnnotation(Markdown.class);
 
 				if(s!=null){
+					s = s.trim();
 					if(markdown ==null ){
 						setMethod.invoke(o,HtmlUtils.htmlEscape(s));
 
 					}else {
-						s = s.replace("\n","<br/>");
+						s = MDTool.markdown2Html(s);
 						Document doc = org.jsoup.Jsoup.parse(s);
 						Elements elements = doc.getElementsByAttribute("class");
 						for(Element ele : elements){
@@ -73,7 +73,8 @@ public class FormUtils
 							ele.replaceWith(new TextNode(ele.toString()));
 						}
 						MarkdownProcessor processor = new MarkdownProcessor();
-						setMethod.invoke(o,processor.markdown(doc.getElementsByTag("body").html()));
+						setMethod.invoke(o,doc.getElementsByTag("body").html());
+
 					}
 
 				}
@@ -118,19 +119,19 @@ public class FormUtils
 		return ret;
 	}
 
-	public static String handleErrors(Model model,Errors errors){
+	public static boolean handleErrors(Model model,Errors errors){
 		if(errors.hasErrors()){
 			Set<Problem> problems = FormUtils.getProblems(errors);
 			model.addAttribute("problems",problems);
-			return "edit_question";
+			return true;
 		}
-		return null;
+		return false;
 	}
 
 	private static Set<Problem> getProblems(Errors errors){
 		Set<Problem> problems = new HashSet<>(errors.getErrorCount());
 		for(FieldError error : errors.getFieldErrors()){
-			Problem problem = new Problem(error.getField(),error.getRejectedValue().toString(),error.getDefaultMessage());
+			Problem problem = new Problem(error.getField(),null,error.getDefaultMessage());
 			problems.add(problem);
 		}
 		return problems;

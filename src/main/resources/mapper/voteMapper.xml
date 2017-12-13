@@ -9,7 +9,7 @@
         <id column="parent_type" property="parentType"/>
     </resultMap>
 
-    <select id="selectVotes" parameterType="com.xhystc.zhihu.model.Vote" resultMap="voteResultMap">
+    <select id="selectVotes" parameterType="com.xhystc.zhihu.model.vo.query.VoteQueryCondition" resultMap="voteResultMap">
         SELECT * from vote
         <where>
             <if test="userId != null">
@@ -20,6 +20,12 @@
             </if>
             <if test="parentId != null">
                 and parent_id = #{parentId}
+            </if>
+            <if test="include != null and include.size >0">
+                and parent_id in
+                <foreach collection="include" item="pid" open="(" close=")" separator=",">
+                    #{pid}
+                </foreach>
             </if>
         </where>
     </select>

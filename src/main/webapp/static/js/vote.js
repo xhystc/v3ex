@@ -24,12 +24,17 @@ function dovote(type,id) {
             commentId:id
         };
         $.post(path+'/vote/service/do_vote',voteParam,function (data) {
+            console.log(data.hint);
             if(data.code===0){
                 alert(data.hint);
             }else {
-                var $button = $('#vote-button-comment-'+id);
-                $button.text('^ '+data.hint);
-                $button.parent().addClass('voted');
+                var $agree = $('#comment-item-agree-'+id);
+                $agree.text(data.hint);
+                if(data.code >0){
+                    $agree.addClass('voted');
+                } else {
+                    $agree.removeClass('voted');
+                }
 
             }
 

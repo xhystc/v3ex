@@ -1,17 +1,17 @@
 package com.xhystc.zhihu.test;
 
 import com.xhystc.zhihu.commons.FormUtils;
-import com.xhystc.zhihu.model.Comment;
+import com.xhystc.zhihu.model.vo.form.QuestionCommentForm;
 import com.xhystc.zhihu.model.vo.form.QuestionForm;
+import com.youbenzi.mdtool.tool.MDTool;
 
 public class EscapeHTMLTest
 {
 	public static void main(String[] args){
-		QuestionForm form = new QuestionForm();
-		form.setTitle("<h1>haha</h1>");
-
-		FormUtils.escapeHTML(form);
-		System.out.println(form.getTitle());
+		QuestionCommentForm form = new QuestionCommentForm();
+		form.setContent("## 哈哈\n### 嘻嘻");
+		FormUtils.escapeFormModle(form);
+		System.out.println(form.getContent());
 	}
 }
 

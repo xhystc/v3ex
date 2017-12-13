@@ -8,6 +8,7 @@ public class ContextPathListener implements ServletContextListener
 	@Override
 	public void contextInitialized(ServletContextEvent servletContextEvent)
 	{
+
 		servletContextEvent.getServletContext().setAttribute("path",servletContextEvent.getServletContext().getContextPath());
 	}
 

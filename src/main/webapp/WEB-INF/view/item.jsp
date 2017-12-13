@@ -14,7 +14,7 @@
             <tr>
                 <td width="48" valign="top" align="center">
                     <a href="${path}/user/${question.user.id}">
-                        <img src="${path}/${question.user.iconUrl}" class="avatar" border="0" align="default" height="48" width="48"  />
+                        <img src="${path}/${question.user.iconUrl}" class="avatar" border="0" align="default" height="48px" width="48px"  />
                     </a>
                 </td>
                 <td width="10"></td>
@@ -31,7 +31,7 @@
          ">
         <a href="javasrcipt:"
            onclick="dovote('question',${question.id})"
-           class="vote" id="vote-button-question-${question.id}">^&nbsp;${question.agree}</a>
+           class="vote" id="vote-button-question-${question.id}">^&nbsp;${question.voteInform.voteCount}</a>
     </div> &nbsp;
                         <a class="node" href="/tag/programmer">程序员</a> &nbsp;•&nbsp;
                     <strong>

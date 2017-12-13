@@ -15,7 +15,7 @@ public class Comment implements Serializable,Votable
 	private String content;
 	private int commentCount;
 	private Date sendDate;
-	private int agree;
+	private VoteInform voteInform;
 	private boolean isVoted;
 
 
@@ -94,14 +94,14 @@ public class Comment implements Serializable,Votable
 		this.sendDate = sendDate;
 	}
 
-	public int getAgree()
+	public VoteInform getVoteInform()
 	{
-		return agree;
+		return voteInform;
 	}
 
-	public void setAgree(int agree)
+	public void setVoteInform(VoteInform voteInform)
 	{
-		this.agree = agree;
+		this.voteInform = voteInform;
 	}
 
 	public boolean getIsVoted()
@@ -126,28 +126,5 @@ public class Comment implements Serializable,Votable
 		return id;
 	}
 
-	@Override
-	public int votes()
-	{
-		return agree;
-	}
-
-	@Override
-	public void votes(int vote)
-	{
-		agree = vote;
-	}
-
-	@Override
-	public boolean isVoted()
-	{
-		return isVoted;
-	}
-
-	@Override
-	public void isVoted(boolean is)
-	{
-		isVoted = is;
-	}
 
 }

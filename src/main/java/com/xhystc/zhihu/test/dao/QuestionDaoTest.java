@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 @RunWith(SpringJUnit4ClassRunner.class)  //使用junit4进行测试
-@ContextConfiguration(locations = {"classpath:applicationContext.xml", "classpath:applicationContext-mybatis.xml"})
+@ContextConfiguration(locations = {"classpath:conf/applicationContext.xml", "classpath:conf/applicationContext-mybatis.xml"})
 public class QuestionDaoTest
 {
 	@Autowired
@@ -26,13 +26,14 @@ public class QuestionDaoTest
 	@Autowired
 	UserDao userDao;
 
+
 	@Test
 	@Transactional(rollbackFor = Exception.class)
 	@Rollback(false)
 	public void getQuestionById() throws Exception
 	{
-		Question question = questionDao.getQuestionById((long) 1);
-		System.out.println(question.getTitle()+":"+question.getUser().getEmail());
+		Question question = questionDao.getQuestionById(47L);
+		System.out.println(question.getCommentCount());
 	}
 
 	@Test
@@ -67,43 +68,28 @@ public class QuestionDaoTest
 	public void updateQuestion() throws Exception
 	{
 		Question question = questionDao.getQuestionById((long) 1);
-		question.setContent("我有个室友，上厕所的时候喜欢玩手机。有次大号的时候正在玩王者，当时选的中单诸葛亮各种秀，就在拿三杀的时候一个激动，不小心把手机掉到便池里面了，手机大，卡在洞口处。蹲在那纠结了一分钟捡还是不捡。刚好屏幕朝上，看见对面强行把自己家队友一波团灭。突然咬着牙下定决心，把手机捡起来继续嗨。队友骂他为什么挂机，他说手机刚刚掉到便池了，现在我捡起来继续玩了。突然发现开的是全部，对话被对面看到了，然后全场沉默了。。。可惜那把还是输了，但是没人举报我那室友，并且还收到九个赞。。。。。。\n" +
-				"\n" +
-				"作者：其土人老\n" +
-				"链接：https://www.zhihu.com/question/68450231/answer/264965204\n" +
-				"来源：知乎\n" +
-				"著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。");
-		question.setTitle("如何证明「你永远不知道你的王者荣耀队友正在干什么」这句话？");
-		question.setUser(userDao.getUserById((long) 4));
-		question.setCreateDate(new Date());
+
+		question.setActiveTime(new Date());
+
 		questionDao.updateQuestion(question);
 	}
-	@Test
-	@Transactional(rollbackFor = Exception.class)
-	@Rollback(false)
-	public void increaseComment() throws Exception{
-		Question question = new Question();
-		question.setId(6L);
-		question.setAgree(3);
-		questionDao.increaseAgree(1L,-1);
-	}
+
 
 	@Test
 	@Transactional(rollbackFor = Exception.class)
 	@Rollback(false)
 	public void selectQuestion(){
 		QuestionQueryCondition condition = new QuestionQueryCondition();
-		condition.setRows(3);
+		condition.setRows(5);
 		condition.setOffset(0);
 		condition.setOrder("asc");
-		Set<Long> ruleOut = new HashSet<>();
-		ruleOut.add(1L);
-		condition.setRuleOut(ruleOut);
+		condition.setTagId(2L);
+
 		List<Question> questions = questionDao.selectQuestions(condition);
 
 
 		for(Question question : questions){
-			System.out.println(question.getTitle()+":"+question.getUser().getName());
+			System.out.println(question.getTitle()+":"+question.getCommentCount());
 		}
 	}
 

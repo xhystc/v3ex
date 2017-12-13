@@ -9,7 +9,7 @@
 <div class="header">
     <div class="fr"><a href="${path}/user/${question.user.id}"><img
             src="${path}/${commentPage.question.user.iconUrl}"
-            class="avatar" border="0" align="default"/></a></div>
+            class="avatar" border="0" align="default" width="48" height="48"/></a></div>
     <a href="${path}">V2EX</a> <span class="chevron">&nbsp;›&nbsp;</span> <a href="${path}/tag/jobs">酷工作</a>
     <div class="sep10"></div>
     <h1>${commentPage.question.title}
@@ -21,7 +21,7 @@
          ">
             <a href="javasrcipt:"
                onclick="dovote('question',${commentPage.question.id})"
-               class="vote" id="vote-button-question-${commentPage.question.id}">^&nbsp;${commentPage.question.agree}</a>
+               class="vote" id="vote-button-question-${commentPage.question.id}">^&nbsp;${commentPage.question.voteInform.voteCount}</a>
         </div> &nbsp;
         <a href="${path}/user/${commentPage.question.user.id}">
             ${commentPage.question.user.name}

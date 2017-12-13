@@ -27,17 +27,24 @@ public class VoteController
 		return doVote("question",questionId);
 	}
 
+	@RequestMapping(value = "/vote/service/do_vote",headers = {"Accept=application/json"},params = {"commentId"})
+	public @ResponseBody GeneralResultBean doCommentVote(Long commentId){
+		return doVote("comment",commentId);
+	}
+
 	private GeneralResultBean doVote(String type,Long id){
 		User user = FormUtils.getCurrentUser();
 		if(user==null)
+		{
 			return new GeneralResultBean(0,"请先登录");
+		}
 		Vote vote = new Vote(user.getId(),type,id);
-		if(voteService.isVoted(user.getId(),type,id)){
-			voteService.disVote(vote);
-			return new GeneralResultBean(-1,""+voteService.getVotes(type,id));
+		if(voteService.isVote(user.getId(),type,id)){
+			voteService.disVote(user.getId(),type,id);
+			return new GeneralResultBean(-1,""+voteService.voteInform(type,id).getVoteCount());
 		}else {
-			voteService.doVote(vote);
-			return new GeneralResultBean(1,""+voteService.getVotes(type,id));
+			voteService.doVote(user.getId(),type,id);
+			return new GeneralResultBean(1,""+voteService.voteInform(type,id).getVoteCount());
 		}
 
 	}

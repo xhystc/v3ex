@@ -11,6 +11,7 @@ public class CommentQueryCondition
 	private int offset;
 	private int rows;
 	private String order;
+
 	private String orderBy;
 
 	public Long getUserId()

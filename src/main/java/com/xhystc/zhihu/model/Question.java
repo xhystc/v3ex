@@ -16,7 +16,7 @@ public class Question implements Serializable,Votable
 	private Date createDate;
 	private int commentCount;
 	private Date activeTime;
-	private int agree;
+	private VoteInform voteInform;
 	private boolean isVoted;
 
 	public String getCreateDateShowString(){
@@ -98,50 +98,29 @@ public class Question implements Serializable,Votable
 		this.activeTime = activeTime;
 	}
 
-	public int getAgree()
+
+	@Override
+	public VoteInform getVoteInform()
 	{
-		return agree;
+		return voteInform;
 	}
 
-	public void setAgree(int agree)
+	@Override
+	public void setVoteInform(VoteInform voteInform)
 	{
-		this.agree = agree;
+		this.voteInform = voteInform;
 	}
 
+	@Override
 	public boolean getIsVoted()
 	{
 		return isVoted;
 	}
 
-	public void setIsVoted(boolean voted)
-	{
-		isVoted = voted;
-	}
-
 	@Override
-	public boolean equals(Object o)
+	public void setIsVoted(boolean is)
 	{
-		if (this == o) return true;
-		if (!(o instanceof Question)) return false;
-
-		Question question = (Question) o;
-
-		if (getCommentCount() != question.getCommentCount()) return false;
-		if (agree != question.agree) return false;
-		if (!getUser().equals(question.getUser())) return false;
-		if (!getTitle().equals(question.getTitle())) return false;
-		return getContent().equals(question.getContent());
-	}
-
-	@Override
-	public int hashCode()
-	{
-		int result = getUser().hashCode();
-		result = 31 * result + getTitle().hashCode();
-		result = 31 * result + getContent().hashCode();
-		result = 31 * result + getCommentCount();
-		result = 31 * result + agree;
-		return result;
+		isVoted = is;
 	}
 
 	@Override
@@ -156,29 +135,6 @@ public class Question implements Serializable,Votable
 		return id;
 	}
 
-	@Override
-	public int votes()
-	{
-		return agree;
-	}
-
-	@Override
-	public void votes(int vote)
-	{
-		agree = vote;
-	}
-
-	@Override
-	public boolean isVoted()
-	{
-		return isVoted;
-	}
-
-	@Override
-	public void isVoted(boolean is)
-	{
-		isVoted = is;
-	}
 }
 
 

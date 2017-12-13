@@ -10,15 +10,27 @@
 
     <div class="inner" style="background-color: #fff; border-top-left-radius: 3px;
     border-top-right-radius: 3px;" id="Tabs">
-        <a href="/?tab=all" class="tab_current">全部</a>
-        <a href="/?tab=tech" class="tab">技术</a>
-        <a href="/?tab=creative" class="tab">创意</a>
-        <a href="/?tab=play" class="tab">好玩</a>
-        <a href="/?tab=apple" class="tab">Apple</a>
-        <a href="/?tab=jobs" class="tab">酷工作</a>
-        <a href="/?tab=deals" class="tab">交易</a>
-        <a href="/?tab=city" class="tab">城市</a>
-        <a href="/?tab=qna" class="tab">问与答</a>
-        <a href="/?tab=hot" class="tab">最热</a>
-        <a href="/?tab=r2" class="tab">R2</a>
+        <a href="${path}/index"
+                <c:choose>
+                    <c:when test="${empty currentTag}">
+                        class="tab_current"
+                    </c:when>
+                    <c:otherwise>
+                        class="tab"
+                    </c:otherwise>
+                </c:choose>
+        >全部</a>
+        <c:forEach items="${tags}" var="tag">
+            <a href="${path}/index?tagId=${tag.id}"
+                    <c:choose>
+                        <c:when test="${currentTag == tag.id}">
+                            class="tab_current"
+                        </c:when>
+                        <c:otherwise>
+                            class="tab"
+                        </c:otherwise>
+                    </c:choose>
+            >${tag.name}</a>
+        </c:forEach>
+
     </div>
