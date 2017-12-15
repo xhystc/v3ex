@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.xhystc.zhihu.dao.MessageDao">
-    <resultMap id="messageResultMapper" type="com.xhystc.zhihu.model.Message">
+<mapper namespace="com.xhystc.v3ex.dao.MessageDao">
+    <resultMap id="messageResultMapper" type="com.xhystc.v3ex.model.Message">
         <id column="id" property="id"/>
         <result column="content" property="content"/>
         <result column="send_date" property="sendDate"/>
         <result column="is_read" property="isRead"/>
-        <association property="from" column="from_id" javaType="com.xhystc.zhihu.model.User" >
+        <association property="from" column="from_id" javaType="com.xhystc.v3ex.model.User" >
             <id column="from_id" property="id"/>
             <result column="from_name" property="name"/>
             <result column="from_password" property="password"/>
@@ -16,7 +16,7 @@
             <result column="from_is_locked" property="isLocked"/>
             <result column="from_regist_date" property="registDate"/>
         </association>
-        <association property="to" column="to_id" javaType="com.xhystc.zhihu.model.User">
+        <association property="to" column="to_id" javaType="com.xhystc.v3ex.model.User">
             <id column="to_id" property="id"/>
             <result column="to_name" property="name"/>
             <result column="to_password" property="password"/>
@@ -37,7 +37,7 @@
         from message m LEFT JOIN user u1 on m.from_id=u1.id LEFT JOIN user u2 on m.to_id =u2.id where m.id = #{_parameter}
     </select>
 
-    <insert id="insertMessage" parameterType="com.xhystc.zhihu.model.Message"  useGeneratedKeys="true" keyProperty="id" >
+    <insert id="insertMessage" parameterType="com.xhystc.v3ex.model.Message"  useGeneratedKeys="true" keyProperty="id" >
         INSERT INTO message(from_id, to_id, content,send_date)
         VALUES (#{from.id},#{to.id},#{content},#{sendDate})
     </insert>
@@ -45,12 +45,12 @@
         DELETE FROM message WHERE id = #{_parameter}
     </delete>
 
-    <update id="updateMessage" parameterType="com.xhystc.zhihu.model.Message">
+    <update id="updateMessage" parameterType="com.xhystc.v3ex.model.Message">
         UPDATE message SET from_id = #{from.id},to_id = #{to.id},content = #{content},is_read = #{isRead},send_date=#{sendDate}
         WHERE id = #{id}
     </update>
 
-    <select id="selectMessages" parameterType="com.xhystc.zhihu.model.vo.query.MessageQueryCondition" resultMap="messageResultMapper">
+    <select id="selectMessages" parameterType="com.xhystc.v3ex.model.vo.query.MessageQueryCondition" resultMap="messageResultMapper">
         select
         m.*,
         u1.id as from_id,u1.regist_date AS from_regist_date,u1.name AS  from_name,u1.email AS from_email,u1.iconUrl AS from_iconUrl,u1.password AS from_password,u1.salt AS from_salt,u1.is_locked AS from_is_locked,

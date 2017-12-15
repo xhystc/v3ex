@@ -40,7 +40,7 @@
                     </span>
                 </td>
                 <td width="70" align="right" valign="middle">
-                    <a href="${path}/q/${question.id}" class="count_livid">${question.commentCount}</a>
+                    <a href="${path}/q/${question.id}" class="count_livid">${question.commentInform.commentCount}</a>
                 </td>
             </tr>
         </table>

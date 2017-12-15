@@ -9,7 +9,7 @@
     <import resource="classpath:conf/applicationContext-redis.xml"/>
     <import resource="classpath:conf/applicationContext.xml"/>
 
-    <context:component-scan base-package="com.xhystc.zhihu.shiro"/>
+    <context:component-scan base-package="com.xhystc.v3ex.shiro"/>
 
     <!-- shiro filter 配置-->
     <bean id="shiroFilter" class="org.apache.shiro.spring.web.ShiroFilterFactoryBean">
@@ -21,8 +21,8 @@
         <property name="filterChainDefinitions">
             <value>
                 /logout=logout
-                /do_comment=roles[user]
-                /publish=roles[user]
+                /publish_comment=roles[user]
+                /publish_question=roles[user]
                 /service/**==roles[user]
             </value>
         </property>
@@ -56,14 +56,14 @@
         <property name="sessionIdCookie" ref="sessionIdCookie"/>
         <property name="sessionDAO" ref="RedisSessionDAO"/>
     </bean>
-    <bean id="credentialsMatcher" class="com.xhystc.zhihu.shiro.RetryLimitHashedCredentialsMatcher">
+    <bean id="credentialsMatcher" class="com.xhystc.v3ex.shiro.RetryLimitHashedCredentialsMatcher">
         <property name="hashIterations" value="${shiro.hashIterations}"/>
         <property name="retryTimes" value="${shiro.retryTimes}"/>
         <property name="interval" value="${shiro.interval}"/>
         <property name="hashAlgorithmName" value="${shiro.hashAlgorithmName}"/>
     </bean>
 
-    <bean id="generalRealm" class="com.xhystc.zhihu.shiro.GeneralRealm">
+    <bean id="generalRealm" class="com.xhystc.v3ex.shiro.GeneralRealm">
         <property name="credentialsMatcher" ref="credentialsMatcher"/>
     </bean>
     <bean id="securityManager" class="org.apache.shiro.web.mgt.DefaultWebSecurityManager">

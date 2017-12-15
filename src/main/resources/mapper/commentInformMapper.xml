@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.xhystc.zhihu.dao.CommentInformDao">
-    <resultMap id="commentInformResultMapper" type="com.xhystc.zhihu.model.CommentInform">
+<mapper namespace="com.xhystc.v3ex.dao.CommentInformDao">
+    <resultMap id="commentInformResultMapper" type="com.xhystc.v3ex.model.CommentInform">
         <id column="id" property="id"/>
         <result column="comment_count" property="commentCount"/>
         <result column="last_comment_time" property="lastCommentTime"/>
-        <association property="lastCommentUser" column="last_comment_user" javaType="com.xhystc.zhihu.model.User" >
+        <association property="lastCommentUser" column="last_comment_user" javaType="com.xhystc.v3ex.model.User" >
             <id column="uid" property="id"/>
             <result column="name" property="name"/>
             <result column="password" property="password"/>
@@ -18,12 +18,12 @@
         </association>
     </resultMap>
 
-    <insert id="insertCommentInform" parameterType="com.xhystc.zhihu.model.CommentInform">
+    <insert id="insertCommentInform" parameterType="com.xhystc.v3ex.model.CommentInform">
         INSERT INTO comment_inform(id, last_comment_time, last_comment_user, comment_count)
         VALUES(#{id},#{lastCommentTime},#{lastCommentUser.id},#{commentCount})
     </insert>
 
-    <update id="updateCommentInform" parameterType="com.xhystc.zhihu.model.CommentInform">
+    <update id="updateCommentInform" parameterType="com.xhystc.v3ex.model.CommentInform">
         UPDATE comment_inform
         <set>
             <if test="lastCommentTime != null">
@@ -39,13 +39,34 @@
         where id = #{id}
     </update>
 
-    <select id="selectCommentInform" parameterType="java.lang.String" resultMap="commentInformResultMapper">
-        SELECT c.*,u.*,u.id as uid FROM comment_inform c LEFT JOIN user u ON c.last_comment_user = u.id WHERE c.id = #{id}
+    <select id="getCommentInformById" parameterType="java.lang.String" resultMap="commentInformResultMapper">
+        SELECT c.*,u.*,u.id as uid FROM comment_inform c LEFT JOIN user u ON c.last_comment_user = u.id WHERE c.id = #{arg0}
+    </select>
+    <select id="selectCommentInform" parameterType="com.xhystc.v3ex.model.vo.query.CommentInformQueryCondition" resultMap="commentInformResultMapper">
+        SELECT c.* FROM comment_inform c
+        <where>
+        <if test="id != null and id >0">
+            id = #{id}
+        </if>
+        <if test="commentCount != 0">
+            and comment_count > #{commentCount}
+        </if>
+        <if test="lastCommentTime != null">
+            and last_comment_time > #{lastCommentTime}
+        </if>
+        <if test="include != null and include.size >0">
+            and id in
+            <foreach collection="include" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        </where>
     </select>
 
     <update id="increaseCommentInform">
-        UPDATE comment_inform SET last_comment_user = #{arg1},last_comment_time = #{arg2},comment_count = comment_count+#{arg3}
-        where id = #{arg0}
+        UPDATE comment_inform SET last_comment_user = #{lastCommentUser.id},last_comment_time = #{lastCommentTime},
+            comment_count = comment_count+#{commentCount}
+        where id = #{id}
     </update>
 </mapper>
 

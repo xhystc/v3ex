@@ -14,5 +14,5 @@
             ${tag.name}</a>
         </c:forEach>
     </div>
-    <span class="gray">${commentPage.question.commentCount} 回复 &nbsp;<strong class="snow">|</strong> &nbsp; ${commentPage.question.activeTimeShowString} 被顶</span>
+    <span class="gray">${commentPage.question.commentInform.commentCount} 回复 &nbsp;<strong class="snow">|</strong> &nbsp; ${commentPage.question.activeTimeShowString} 被顶</span>
 </div>

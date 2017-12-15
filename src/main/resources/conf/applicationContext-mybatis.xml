@@ -12,7 +12,7 @@
     http://www.springframework.org/schema/context/spring-context-3.0.xsd">
 
     <import resource="classpath:conf/applicationContext.xml"/>
-    <context:component-scan base-package="com.xhystc.zhihu.dao"/>
+    <context:component-scan base-package="com.xhystc.v3ex.dao"/>
 
 
     <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
@@ -70,7 +70,7 @@
 
     <!-- Mapper接口所在包名，Spring会自动查找其下的Mapper -->
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
-        <property name="basePackage" value="com.xhystc.zhihu.dao" />
+        <property name="basePackage" value="com.xhystc.v3ex.dao" />
         <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
     </bean>
 

@@ -2,14 +2,14 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 
-<mapper namespace="com.xhystc.zhihu.dao.VoteDao">
-    <resultMap id="voteResultMap" type="com.xhystc.zhihu.model.Vote">
+<mapper namespace="com.xhystc.v3ex.dao.VoteDao">
+    <resultMap id="voteResultMap" type="com.xhystc.v3ex.model.Vote">
         <id column="user_id" property="userId"/>
         <id column="parent_id" property="parentId"/>
         <id column="parent_type" property="parentType"/>
     </resultMap>
 
-    <select id="selectVotes" parameterType="com.xhystc.zhihu.model.vo.query.VoteQueryCondition" resultMap="voteResultMap">
+    <select id="selectVotes" parameterType="com.xhystc.v3ex.model.vo.query.VoteQueryCondition" resultMap="voteResultMap">
         SELECT * from vote
         <where>
             <if test="userId != null">
@@ -30,12 +30,12 @@
         </where>
     </select>
 
-    <insert id="insertVote" parameterType="com.xhystc.zhihu.model.Vote">
+    <insert id="insertVote" parameterType="com.xhystc.v3ex.model.Vote">
         INSERT INTO vote(user_id, parent_id, parent_type)
                 VALUES (#{userId},#{parentId},#{parentType})
     </insert>
 
-    <delete id="deleteVote" parameterType="com.xhystc.zhihu.model.Vote">
+    <delete id="deleteVote" parameterType="com.xhystc.v3ex.model.Vote">
         DELETE FROM vote WHERE user_id = #{userId} AND parent_id = #{parentId} AND parent_type = #{parentType}
     </delete>
     <select id="getUserVotes" parameterType="java.lang.Long" resultMap="voteResultMap">

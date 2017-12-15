@@ -1,3 +1,4 @@
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@include file="/WEB-INF/view/head.jsp"%>
 <%@include file="/WEB-INF/view/rightbar.jsp"%>
@@ -14,8 +15,8 @@
                 <%@include file="/WEB-INF/view/question_inform.jsp"%>
                 <%@include file="/WEB-INF/view/question_comment_item.jsp"%>
                 <c:choose>
-                    <c:when test="${commentPage.question.commentCount gt 20}">
-                        <%@include file="/WEB-INF/view/question_pagebutton.jsp"%>
+                    <c:when test="${commentPage.question.commentInform.commentCount gt 20}">
+                        <%@include file="/WEB-INF/view/pagebutton.jsp"%>
                     </c:when>
                 </c:choose>
             </div>

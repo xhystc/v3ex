@@ -12,6 +12,7 @@
             <div class="sep20"></div>
             <div class="box">
              <%@include file="tag.jsp"%>
+                <%@include file="pagebutton.jsp"%>
                 <div class="cell" style="background-color: #f9f9f9; padding: 10px 10px 10px 20px;">
                 </div>
             <%@include file="item.jsp"%>

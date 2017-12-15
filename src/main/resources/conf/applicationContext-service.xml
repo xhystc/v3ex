@@ -2,15 +2,14 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xmlns:context="http://www.springframework.org/schema/context"
-       xmlns:aop="http://www.springframework.org/schema/aop"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
                         http://www.springframework.org/schema/context
                         http://www.springframework.org/schema/context/spring-context-3.0.xsd ">
 
-    <context:component-scan base-package="com.xhystc.zhihu.service"/>
+    <context:component-scan base-package="com.xhystc.v3ex.service"/>
     <import resource="classpath:conf/applicationContext.xml"/>
     <import resource="classpath:conf/applicationContext-redis.xml"/>
-    <bean id="tokenFilter" class="com.xhystc.zhihu.commons.TokenFilter">
+    <bean id="tokenFilter" class="com.xhystc.v3ex.commons.TokenFilter">
         <property name="tokenPath">
             <list>
                 <value>/do_comment</value>
@@ -28,7 +27,7 @@
        <property name="redirect" value="/"/>
     </bean>
 
-    <bean id="passwordHelper" class="com.xhystc.zhihu.commons.PasswordHelper">
+    <bean id="passwordHelper" class="com.xhystc.v3ex.commons.PasswordHelper">
         <property name="hashIterations" value="${shiro.hashIterations}"/>
         <property name="algorithmName" value="${shiro.hashAlgorithmName}"/>
     </bean>

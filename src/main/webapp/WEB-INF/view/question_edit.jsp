@@ -19,7 +19,7 @@
         <c:if test="${not empty problems}">
             <%@include file="problem.jsp"%>
         </c:if>
-        <form method="post" action="${path}/publish" id="compose">
+        <form method="post" action="${path}/publish_question" id="compose">
             <input name="formToken" value="${formToken}" hidden>
             <div class="cell"><div class="fr fade" id="title_remaining">120</div>
                 主题标题

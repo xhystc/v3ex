@@ -15,7 +15,7 @@
         添加一条新回复
     </div>
     <div class="cell">
-        <form method="post" action="${path}/do_comment">
+        <form method="post" action="${path}/publish_comment">
             <textarea name="content" maxlength="10000" class="mll" id="reply_content"></textarea>
             <div class="sep10"></div>
             <div class="fr">
