@@ -12,7 +12,7 @@ public interface TagDao
 	List<Tag> selectAll();
 	List<Tag> getTagsByName(String name);
 	Tag getTagById(Long id);
-	int increaseCount(List<Long> ids);
+	int increaseCount(Long id);
 
 }
 

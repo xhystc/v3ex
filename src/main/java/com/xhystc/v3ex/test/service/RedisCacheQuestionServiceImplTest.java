@@ -57,7 +57,7 @@ public class RedisCacheQuestionServiceImplTest
 	@Test
 	public void afterPropertiesSet()
 	{
-	//	questionService.afterPropertiesSet();
+		questionService.storeQuestions();
 	}
 
 

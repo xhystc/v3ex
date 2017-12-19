@@ -58,7 +58,6 @@ public class QuestionDaoTest
 					"大学同学，同宿舍，高白胖，口才好！不挑食，味口非常好！学校附近的兰州拉面一次可以吃两大碗，汤都不带剩的。有一次吃完回到宿舍，又扫光了老五带回的几乎没有油水的蛋炒饼！每次宿舍出去聚餐，都被服务员嗤笑：下一盘菜上来之前，上一盘菜必须已扫光!到最后，他还要把盘底的汤水蘸干净！猪也没吃得这么干净！常喊着要减肥，也经常行动。每次都是只喝水及饮料，最长一次节食10几天，但开禁之后各种爆吃，大学四年没见他有瘦下来过！穿着随意！衣服常这一个孔，那一个洞的。最牛逼的是，大学报到时发了两套床单及被套，大一过后，反过来再用到大二结束，另外一套大三大四用，就这样大学四年没有洗过一次！喜欢躺在床上看小说，除了上厕所，可48小时不用下床。就在这种艰苦的环境下，人还是白胖白胖的，没有任何皮肤的问题，皮抗太高！大三那年，宿舍集体到大连旅游，去之前和我们说，会有人接待。到那边时，住*行招待所，全程有人开车陪我们吃喝玩。走之前行长请我们吃饭，每人送了一堆的干货海鲜！而后才知这小子母上是*行高层，家族大部分或经商或央企高层。毕业四年时，碰了次面，在北京已有5套房。还是那么能吃,就是更白胖了！转眼已毕业多年，6人散落各地！宿舍熄灯后，一人泡面，五个人抢吃的场景仿佛就在昨天！祝各兄弟一切安好！想念你们！");
 			question.setTitle("你认识的有钱人是怎样生活的？");
 			question.setUser(user);
-			question.setActiveTime(date);
 			question.setCreateDate(new Date());
 			questionDao.insertQuestion(question);
 		}
@@ -79,8 +78,6 @@ public class QuestionDaoTest
 	{
 		Question question = questionDao.getQuestionById((long) 1);
 
-		question.setActiveTime(new Date());
-
 		questionDao.updateQuestion(question);
 	}
 
@@ -89,18 +86,23 @@ public class QuestionDaoTest
 	@Transactional(rollbackFor = Exception.class)
 	@Rollback(false)
 	public void selectQuestion(){
-		QuestionQueryCondition condition = new QuestionQueryCondition();
-		condition.setRows(20);
-		condition.setOffset(200000);
+			QuestionQueryCondition condition = new QuestionQueryCondition();
+			condition.setRows(20);
+			condition.setOffset(0);
+			condition.setTagId(1L);
+			List<Question> questions = questionDao.selectQuestions(condition);
 
-		condition.setNeedOrder(false);
-
-		List<Question> questions = questionDao.selectQuestions(condition);
-		
-		for(Question question : questions){
-			System.out.println(question.getTitle()+":"+question.getCommentCount());
-		}
-		System.out.println(questionDao.total(1L));
+			for(Question question : questions){
+				System.out.println(question.getTitle()+":"+question.getCommentCount());
+			}
+			System.out.println(questionDao.total(1L));
 	}
 
+
+	@Test
+	@Transactional(rollbackFor = Exception.class)
+	@Rollback(false)
+	public void total(){
+		System.out.println(questionDao.total(null));
+	}
 }

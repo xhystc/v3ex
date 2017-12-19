@@ -4,8 +4,8 @@ public interface Votable
 {
 	String type();
 	Long id();
-	VoteInform getVoteInform();
-	void setVoteInform(VoteInform voteInform);
+	int getVoteCount();
+	void setVoteCount(int vote);
 	boolean getIsVoted();
 	void setIsVoted(boolean is);
 }

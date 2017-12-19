@@ -2,7 +2,7 @@ package com.xhystc.v3ex.model.vo.query;
 
 import java.util.Set;
 
-public class UserQueryCondition
+public class UserQueryCondition extends QueryCondition
 {
 	private Set<Long> ids;
 	private String username;

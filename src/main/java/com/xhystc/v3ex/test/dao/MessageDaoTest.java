@@ -16,7 +16,7 @@ import java.util.Date;
 import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)  //使用junit4进行测试
-@ContextConfiguration(locations = {"classpath:applicationContext.xml", "classpath:applicationContext-mybatis.xml"})
+@ContextConfiguration(locations = {"classpath:conf/applicationContext.xml", "classpath:conf/applicationContext-mybatis.xml"})
 public class MessageDaoTest
 {
 	@Autowired
@@ -70,8 +70,7 @@ public class MessageDaoTest
 	public void selectMessage() throws Exception
 	{
 		MessageQueryCondition condition = new MessageQueryCondition();
-		condition.setFromId(5L);
-		condition.setIsRead(true);
+		condition.setConversation("4_5");
 		List<Message> messages = messageDao.selectMessages(condition);
 		for(Message message : messages){
 			System.out.println(message.getFrom().getName()+"->"+message.getTo().getName()+" "+message.getContent()+" "+message.getSendDate());
@@ -85,7 +84,23 @@ public class MessageDaoTest
 		System.out.println(messageDao.countUnreaded(4L));
 	}
 
+	@Test
+	@Transactional(rollbackFor = Exception.class)
+	@Rollback(false)
+	public void tranTest(){
+		Message message = new Message();
+		message.setContent("???");
+		message.setTo(userDao.getUserById(4L));
+		message.setFrom(userDao.getUserById(5L));
+		messageDao.insertMessage(message);
+
+		message.setContent("xxxx");
+		message.setTo(userDao.getUserById(5L));
+		message.setFrom(userDao.getUserById(4L));
+		messageDao.insertMessage(message);
+	}
 }
+
 
 
 

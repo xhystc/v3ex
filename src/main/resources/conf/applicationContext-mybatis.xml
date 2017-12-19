@@ -66,7 +66,7 @@
     </bean>
 
     <!-- 可通过注解控制事务 -->
-    <tx:annotation-driven />
+    <tx:annotation-driven/>
 
     <!-- Mapper接口所在包名，Spring会自动查找其下的Mapper -->
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">

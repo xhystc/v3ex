@@ -12,9 +12,7 @@
     <bean id="tokenFilter" class="com.xhystc.v3ex.commons.TokenFilter">
         <property name="tokenPath">
             <list>
-                <value>/do_comment</value>
-                <value>/do_login</value>
-                <value>/do_regist</value>
+                <value>/do_</value>
                 <value>/publish</value>
             </list>
         </property>

@@ -8,6 +8,15 @@
         <id column="parent_id" property="parentId"/>
         <id column="parent_type" property="parentType"/>
     </resultMap>
+    <update id="updateVoteCount" parameterType="com.xhystc.v3ex.model.VoteInform">
+        UPDATE ${param1} set vote_count = #{param3} where id = #{param2}
+    </update>
+    <update id="incVoteCount" parameterType="com.xhystc.v3ex.model.VoteInform">
+        UPDATE ${param1} set vote_count = vote_count+#{param3} where id = #{param2}
+    </update>
+    <select id="getVoteCount" resultType="java.lang.Integer">
+        SELECT vote_count FROM ${param1} WHERE id = #{param2}
+    </select>
 
     <select id="selectVotes" parameterType="com.xhystc.v3ex.model.vo.query.VoteQueryCondition" resultMap="voteResultMap">
         SELECT * from vote

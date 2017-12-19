@@ -136,6 +136,10 @@
             <taglib-uri>http://java.sun.com/jstl/core</taglib-uri>
             <taglib-location>/WEB-INF/tld/c.tld</taglib-location>
         </taglib>
+        <taglib>
+            <taglib-uri>myutil</taglib-uri>
+            <taglib-location>/WEB-INF/tld/myutil.tld</taglib-location>
+        </taglib>
         <jsp-property-group>
             <url-pattern>*.jsp</url-pattern>
             <page-encoding>UTF-8</page-encoding>

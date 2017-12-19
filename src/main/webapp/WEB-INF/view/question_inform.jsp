@@ -8,11 +8,9 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <div class="cell">
     <div class="fr" style="margin: -3px -5px 0px 0px;">
-        <c:forEach items="${commentPage.tags}" var="tag">
-            <a href="${path}/tag/${tag.id}" class="tag">
+        <a href="${path}/index?tagId=${commentPage.tag.id}" class="tag">
             <li class="fa fa-tag"></li>
-            ${tag.name}</a>
-        </c:forEach>
+            ${commentPage.tag.name}</a>
     </div>
     <span class="gray">${commentPage.question.commentInform.commentCount} 回复 &nbsp;<strong class="snow">|</strong> &nbsp; ${commentPage.question.activeTimeShowString} 被顶</span>
 </div>

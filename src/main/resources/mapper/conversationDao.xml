@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.xhystc.v3ex.dao.ConversationDao">
+    <resultMap id="conversationResultMapper" type="com.xhystc.v3ex.model.Conversation">
+        <id column="id" property="id"/>
+        <result column="last_active_time" property="lastActiveTime"/>
+        <association property="lastMessage" column="last_message"
+                     select="com.xhystc.v3ex.dao.MessageDao.getMessageById"/>
+    </resultMap>
+
+    <insert id="insertConversation">
+        INSERT INTO conversation(id, last_active_time, last_message)
+        VALUES (#{id},#{lastActiveTime},#{lastMessage.id})
+    </insert>
+    <insert id="createUserConversation">
+        INSERT INTO user_conversation(user_id, conversation_id)
+        VALUES (#{arg0},#{arg2}),(#{arg1},#{arg2})
+    </insert>
+    <update id="updateConversation">
+        UPDATE conversation SET last_active_time = #{lastActiveTime},last_message = #{lastMessage.id}
+        where id = #{id}
+    </update>
+    <select id="selectUserConversation" resultMap="com.xhystc.v3ex.dao.ConversationDao.conversationResultMapper">
+        SELECT c.* FROM conversation c WHERE c.id IN
+        (SELECT uc.conversation_id FROM user_conversation uc WHERE uc.user_id = #{arg0})
+        ORDER BY last_active_time desc
+    </select>
+
+</mapper>
+
+
+
+

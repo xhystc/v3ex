@@ -11,6 +11,7 @@ import java.util.Set;
 public interface UserService
 {
 	User getUserByName(String username);
+	User getUserById(Long id);
 	Set<String> getUserRoles(String username);
 	Set<Problem> userRegist(UserRegistForm form);
 	boolean usernameExist(String username);

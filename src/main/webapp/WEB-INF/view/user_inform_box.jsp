@@ -39,6 +39,6 @@
             </tr>
             </tbody></table>
     </div>
-    <div class="inner"><a href="/notifications" class="fade">0 条未读提醒</a></div>
+    <div class="inner"><a href="${path}/message" class="fade">${unread} 条未读提醒</a></div>
 
 </div>

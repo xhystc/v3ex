@@ -6,8 +6,7 @@
         <result column="title" property="title"/>
         <result column="content" property="content"/>
         <result column="create_date" property="createDate"/>
-        <result column="r_comment_count" property="commentCount"/>
-        <result column="active_time" property="activeTime"/>
+        <result column="vote_count" property="voteCount"/>
         <association property="user" javaType="com.xhystc.v3ex.model.User" column="user_id">
             <id column="uid" property="id"/>
             <result column="name" property="name"/>
@@ -18,17 +17,26 @@
             <result column="is_locked" property="isLocked"/>
             <result column="regist_date" property="registDate"/>
         </association>
+        <association property="tag" javaType="com.xhystc.v3ex.model.Tag" column="tag">
+            <id column="tid" property="id"/>
+            <result column="tag_name" property="name"/>
+            <result column="tag_icon" property="icon"/>
+            <result column="description" property="description"/>
+            <result column="question_count" property="questionCount"/>
+        </association>
     </resultMap>
 
     <select id="getQuestionById" parameterType="java.lang.Long" resultMap="questionResultMap">
-        select q.*,u.*,u.id AS uid
-        from question q LEFT JOIN user u on q.user_id=u.id
+        select q.*,u.*,u.id AS uid,t.*,t.id AS tid,t.name AS tag_name,t.icon AS tag_icon
+        from question q
+        LEFT JOIN user u on q.user_id=u.id
+        LEFT JOIN  tag t ON q.tag = t.id
         where q.id = #{_parameter}
     </select>
 
     <insert id="insertQuestion" parameterType="com.xhystc.v3ex.model.Question"  useGeneratedKeys="true" keyProperty="id"  >
-        INSERT INTO question(user_id, title, content, create_date,active_time)
-        VALUES (#{user.id},#{title},#{content},#{createDate},#{activeTime})
+        INSERT INTO question(user_id, title, content, create_date,tag)
+        VALUES (#{user.id},#{title},#{content},#{createDate},#{tag.id})
     </insert>
     <delete id="deleteQuestionById" parameterType="java.lang.Long">
         DELETE FROM question WHERE id = #{_parameter}
@@ -39,6 +47,9 @@
         <set>
             <if test="user != null and user.id !=null and user.id >0">
                 user_id = #{user.id},
+            </if>
+            <if test="tag !=null and tag.id !=null and tag.id>0">
+                tag = #{tag.id}
             </if>
             <if test="content != null">
                  content = #{content},
@@ -58,9 +69,12 @@
     </update>
 
 
-    <select id="selectQuestions" parameterType="com.xhystc.v3ex.model.vo.query.QuestionQueryCondition" resultMap="com.xhystc.v3ex.dao.QuestionDao.questionResultMap">
-        SELECT  q.*,u.*,u.id AS uid
-        FROM question q LEFT JOIN user  u ON q.user_id = u.id
+    <select id="selectQuestions" parameterType="com.xhystc.v3ex.model.vo.query.QuestionQueryCondition"
+            resultMap="com.xhystc.v3ex.dao.QuestionDao.questionResultMap">
+        SELECT  q.*,u.*,u.id AS uid,t.*,t.id AS tid,t.name AS tag_name,t.icon AS tag_icon
+        FROM question q
+        LEFT JOIN user  u ON q.user_id = u.id
+        LEFT JOIN tag t ON q.tag = t.id
         <where>
             <if test="userId != null">
                 user_id = #{userId}
@@ -68,14 +82,14 @@
             <if test="createDate != null">
                 and create_date >= #{createDate}
             </if>
+            <if test="tagId !=null">
+                and tag = #{tagId}
+            </if>
             <if test="include != null and include.size >0">
                 and q.id in
                 <foreach collection="include" item="id" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
-            </if>
-            <if test="tagId !=null">
-               and exists (select q_id from question_tag where q_id = q.id and t_id = #{tagId})
             </if>
 
         </where>
@@ -86,7 +100,7 @@
                    ${orderBy}
                </when>
                <otherwise>
-                   active_time
+                   create_date
                </otherwise>
            </choose>
            <choose>
@@ -112,15 +126,10 @@
 
     </select>
     <select id="total" resultType="java.lang.Integer">
-       <choose>
-           <when test="_parameter != null">
-               SELECT question_count FROM tag WHERE id = #{arg0}
-           </when>
-           <otherwise>
-               SELECT count(*) FROM question;
-           </otherwise>
-       </choose>
-
+        SELECT count(*) FROM question
+        <if test="_parameter != null">
+            WHERE tag = #{_parameter}
+        </if>
     </select>
 
 </mapper>

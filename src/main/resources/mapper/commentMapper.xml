@@ -3,10 +3,9 @@
 <mapper namespace="com.xhystc.v3ex.dao.CommentDao">
     <resultMap id="commentResultMapper" type="com.xhystc.v3ex.model.Comment">
         <id column="id" property="id"/>
-        <result column="parent_type" property="parentType"/>
-        <result column="parent_id" property="parentId"/>
         <result column="send_date" property="sendDate"/>
         <result column="r_comment_count" property="commentCount"/>
+        <result column="vote_count" property="voteCount"/>
         <result column="content" property="content"/>
         <association property="user" column="user_id" javaType="com.xhystc.v3ex.model.User" >
             <id column="uid" property="id"/>
@@ -18,17 +17,29 @@
             <result column="is_locked" property="isLocked"/>
             <result column="regist_date" property="registDate"/>
         </association>
+        <association property="question" column="parent_id" select="com.xhystc.v3ex.dao.QuestionDao.getQuestionById">
+
+        </association>
     </resultMap>
 
     <select id="getCommentById" resultMap="commentResultMapper" parameterType="java.lang.Long">
-        SELECT c.*,u.*,u.id AS uid
+        SELECT c.*,u.*,u.id AS uid,q.*,q.id AS qid
         FROM comment c
         LEFT JOIN user u ON u.id = c.user_id
+        LEFT JOIN question q ON c.parent_id = q.id
         where c.id = #{_parameter}
     </select>
     <update id="updateComment" parameterType="com.xhystc.v3ex.model.Comment">
-        UPDATE comment SET user_id = #{user.id},parent_type = #{parentType},parent_id = #{parentId},
-            content = #{content} WHERE id = #{id};
+        UPDATE comment
+        <set>
+            <if test="content !=null ">
+                content = #{content},
+            </if>
+            <if test="user !=null">
+                user_id = #{user.id}
+            </if>
+        </set>
+        WHERE id = #{id};
     </update>
 
     <delete id="deleteCommentById" parameterType="java.lang.Long">
@@ -36,8 +47,8 @@
     </delete>
 
     <insert id="insertComment" parameterType="com.xhystc.v3ex.model.Comment"  useGeneratedKeys="true" keyProperty="id" >
-        INSERT INTO comment(user_id, parent_type, parent_id, content)
-                VALUES (#{user.id},#{parentType},#{parentId},#{content});
+        INSERT INTO comment(user_id,  parent_id, content)
+                VALUES (#{user.id},#{question.id},#{content});
     </insert>
 
 
@@ -46,11 +57,8 @@
         FROM comment c
         LEFT JOIN user u on u.id = c.user_id
         <where>
-            <if test="parentType != null">
-                parent_type = #{parentType}
-            </if>
             <if test="parentId != null">
-                AND parent_id = #{parentId}
+               parent_id = #{parentId}
             </if>
             <if test="userId != null">
                 AND user_id = #{userId}

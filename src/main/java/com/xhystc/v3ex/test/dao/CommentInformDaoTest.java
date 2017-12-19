@@ -33,7 +33,7 @@ public class CommentInformDaoTest
 	QuestionDao questionDao;
 	@Autowired
 	CommentInformDao commentInformDao;
-
+/*
 	@Transactional(rollbackFor = Exception.class)
 	@Rollback(false)
 	@Test
@@ -47,13 +47,13 @@ public class CommentInformDaoTest
 			CommentInform commentInform = new CommentInform();
 			commentInform.setId("question_"+question.getId());
 			commentInform.setLastCommentUser(userDao.getUserById(34L));
-			commentInform.setLastCommentTime(question.getActiveTime());
+			commentInform.setLastCommentTime(question.getCreateDate());
 			commentInform.setCommentCount(question.getCommentCount());
 
 			commentInformDao.insertCommentInform(commentInform);
 
 		}
-	}
+	}*/
 
 	@Transactional(rollbackFor = Exception.class)
 	@Rollback(false)

@@ -4,6 +4,7 @@ import com.xhystc.v3ex.dao.CommentDao;
 import com.xhystc.v3ex.dao.QuestionDao;
 import com.xhystc.v3ex.dao.UserDao;
 import com.xhystc.v3ex.model.Comment;
+import com.xhystc.v3ex.model.Question;
 import com.xhystc.v3ex.model.User;
 import com.xhystc.v3ex.model.vo.query.CommentQueryCondition;
 import org.junit.Test;
@@ -64,8 +65,9 @@ public class CommentDaoTest
 		for(int i=0;i<100000;i++){
 			comment.setContent("十二月份枪毙名单排满了");
 			comment.setUser(user);
-			comment.setParentId(26L);
-			comment.setParentType("question");
+			Question question = new Question();
+			question.setId(36L);
+			comment.setQuestion(question);
 			commentDao.insertComment(comment);
 		}
 	}
@@ -79,13 +81,12 @@ public class CommentDaoTest
 	{
 		CommentQueryCondition condition = new CommentQueryCondition();
 		condition.setOffset(0);
-		condition.setRows(2);
-		condition.setParentId(5L);
-		condition.setParentType("question");
+		condition.setRows(100);
+		condition.setParentId(51L);
 
 		List<Comment> comments = commentDao.selectComments(condition);
 		for(Comment c : comments){
-			System.out.println(c.getUser().getName()+":"+c.getContent());
+			System.out.println(c.getQuestion().getTag().getName());
 		}
 
 	}

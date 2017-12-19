@@ -4,7 +4,8 @@ import java.util.Date;
 
 public class VoteInform
 {
-	private String id;
+	private String type;
+	private Long vid;
 	private Date lastVoteTime;
 	private Long lastVoteUser;
 	private int voteCount;
@@ -16,14 +17,24 @@ public class VoteInform
 		return votable.type()+"_"+votable.id();
 	}
 
-	public String getId()
+	public String getType()
 	{
-		return id;
+		return type;
 	}
 
-	public void setId(String id)
+	public void setType(String type)
 	{
-		this.id = id;
+		this.type = type;
+	}
+
+	public Long getVid()
+	{
+		return vid;
+	}
+
+	public void setVid(Long vid)
+	{
+		this.vid = vid;
 	}
 
 	public Date getLastVoteTime()

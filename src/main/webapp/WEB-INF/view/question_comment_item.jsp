@@ -24,7 +24,7 @@
                          <c:if test='${comment.isVoted}'>
                              voted
                          </c:if>
-                        ">${comment.voteInform.voteCount}
+                        ">${comment.voteCount}
                         </span>
                     </div>
                     <div class="sep3"></div>

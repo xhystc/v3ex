@@ -35,16 +35,14 @@ public class CommentController
 	private CommentService commentService;
 	private QuestionService questionService;
 	private VoteService voteService;
-	private TagService tagService;
 
 	@Autowired
 	public CommentController(CommentService commentService, @Qualifier("redisCacheQuestionServiceImpl") QuestionService questionService
-			, VoteService voteService,TagService tagService)
+			, VoteService voteService)
 	{
 		this.commentService = commentService;
 		this.questionService = questionService;
 		this.voteService = voteService;
-		this.tagService = tagService;
 	}
 
 	@RequestMapping("/q/{questionId}")
@@ -55,10 +53,10 @@ public class CommentController
 		Question question = questionService.getQuestion(questionId);
 		commentPage.setQuestion(question);
 
-		List<Comment> comments= commentService.getQuestionComments(question.type(),questionId,page,pageSize);
+		List<Comment> comments= commentService.getQuestionComments(questionId,page,pageSize);
 
 		commentPage.setComments(comments);
-		commentPage.setTags(tagService.getQuestionTags(questionId));
+		commentPage.setTag(question.getTag());
 
 		CommentInform commentInform = commentService.commentInform(question.type(),questionId);
 		int lastPage = commentInform.getCommentCount()/pageSize+(commentInform.getCommentCount()%pageSize>0?1:0);
@@ -70,6 +68,7 @@ public class CommentController
 		voteService.fetchUserVotes(userId,comments);
 
 		commentService.fetchComments(comments);
+		commentService.fetchComment(question);
 		question.setCommentInform(commentInform);
 
 		model.addAttribute("commentPage",commentPage);
@@ -93,13 +92,12 @@ public class CommentController
 
 		Comment comment = new Comment();
 		comment.setContent(form.getContent());
-		comment.setParentId(form.getQuestionId());
+		comment.setQuestion(questionService.getQuestion(form.getQuestionId()));
 		comment.setUser(FormUtils.getCurrentUser());
 		comment.setSendDate(new Date());
-		comment.setParentType("question");
 
 		commentService.doComment(comment);
-		questionService.upQuestion(form.getQuestionId());
+		questionService.upQuestion(questionService.getQuestion(form.getQuestionId()));
 
 		return "redirect:/q/"+form.getQuestionId();
 	}

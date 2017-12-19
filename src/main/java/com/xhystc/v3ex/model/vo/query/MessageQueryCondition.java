@@ -3,13 +3,14 @@ package com.xhystc.v3ex.model.vo.query;
 import java.util.Date;
 import java.util.Set;
 
-public class MessageQueryCondition
+public class MessageQueryCondition extends QueryCondition
 {
 	private Set<Long> ids;
 	private Long fromId;
 	private Long toId;
 	private Boolean isRead;
 	private Date sendDate;
+	private String conversation;
 
 	public Boolean getIsRead()
 	{
@@ -59,5 +60,15 @@ public class MessageQueryCondition
 	public void setIds(Set<Long> ids)
 	{
 		this.ids = ids;
+	}
+
+	public String getConversation()
+	{
+		return conversation;
+	}
+
+	public void setConversation(String conversation)
+	{
+		this.conversation = conversation;
 	}
 }

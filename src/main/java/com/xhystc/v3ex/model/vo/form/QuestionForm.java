@@ -4,6 +4,7 @@ import com.xhystc.v3ex.commons.Markdown;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 public class QuestionForm
@@ -16,8 +17,8 @@ public class QuestionForm
 	@Length(max = 20000,message = "标题长度应1小于20000")
 	private String content;
 
-	@Size(max = 5,message = "标签最多5个")
-	private Long[] tags;
+	@NotNull(message = "话题不能为空")
+	private Long tag;
 
 	public String getTitle()
 	{
@@ -39,13 +40,13 @@ public class QuestionForm
 		this.content = content;
 	}
 
-	public Long[] getTags()
+	public Long getTag()
 	{
-		return tags;
+		return tag;
 	}
 
-	public void setTags(Long[] tags)
+	public void setTag(Long tag)
 	{
-		this.tags = tags;
+		this.tag = tag;
 	}
 }

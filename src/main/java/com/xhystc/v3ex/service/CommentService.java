@@ -11,9 +11,9 @@ import java.util.List;
 public interface CommentService
 {
 	void doComment(Comment comment);
-	List<Comment> getQuestionComments(String type, Long id, int page, int pageSize);
+	List<Comment> getQuestionComments(Long id, int page, int pageSize);
 	CommentInform commentInform(String type, Long id);
-	void fetchComment( Commentable commentable);
+	void fetchComment(Commentable commentable);
 	void fetchComments( List<? extends Commentable> commentables);
 
 }

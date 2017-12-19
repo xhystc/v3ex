@@ -1,6 +1,5 @@
 package com.xhystc.v3ex.service.impl;
 
-import com.xhystc.v3ex.dao.QuestionTagDao;
 import com.xhystc.v3ex.dao.TagDao;
 import com.xhystc.v3ex.model.Tag;
 import com.xhystc.v3ex.service.TagService;
@@ -14,8 +13,7 @@ public class TagServiceImpl implements TagService
 {
 	@Autowired
 	TagDao tagDao;
-	@Autowired
-	QuestionTagDao questionTagDao;
+
 
 	@Override
 	public List<Tag> getAllTag()
@@ -28,12 +26,5 @@ public class TagServiceImpl implements TagService
 	{
 		return tagDao.getTagsByName(name);
 	}
-
-	@Override
-	public List<Tag> getQuestionTags(Long quetionId)
-	{
-		return questionTagDao.getQuestionTags(quetionId);
-	}
-
 
 }

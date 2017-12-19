@@ -10,12 +10,11 @@ public class Comment implements Serializable,Votable,Commentable
 {
 	private Long id;
 	private User user;
-	private String parentType;
-	private Long parentId;
+	private Question question;
 	private String content;
 	private int commentCount;
 	private Date sendDate;
-	private VoteInform voteInform;
+	private int voteCount;
 	private CommentInform commentInform;
 	private boolean isVoted;
 
@@ -45,24 +44,14 @@ public class Comment implements Serializable,Votable,Commentable
 		this.user = user;
 	}
 
-	public String getParentType()
+	public Question getQuestion()
 	{
-		return parentType;
+		return question;
 	}
 
-	public void setParentType(String parentType)
+	public void setQuestion(Question question)
 	{
-		this.parentType = parentType;
-	}
-
-	public Long getParentId()
-	{
-		return parentId;
-	}
-
-	public void setParentId(Long parentId)
-	{
-		this.parentId = parentId;
+		this.question = question;
 	}
 
 	public String getContent()
@@ -96,15 +85,15 @@ public class Comment implements Serializable,Votable,Commentable
 	}
 
 	@Override
-	public VoteInform getVoteInform()
+	public int getVoteCount()
 	{
-		return voteInform;
+		return voteCount;
 	}
 
 	@Override
-	public void setVoteInform(VoteInform voteInform)
+	public void setVoteCount(int voteCount)
 	{
-		this.voteInform = voteInform;
+		this.voteCount = voteCount;
 	}
 
 	@Override

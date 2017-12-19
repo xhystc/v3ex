@@ -15,5 +15,5 @@ public interface MessageDao
 	int updateMessage(Message message);
 	List<Message> selectMessages(MessageQueryCondition condition);
 	int countUnreaded(Long userId);
-	int readAll(Long userId);
+	int readAll(Long userId,String conversationId);
 }

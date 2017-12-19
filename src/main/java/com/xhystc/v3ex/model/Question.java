@@ -11,12 +11,12 @@ public class Question implements Serializable,Votable,Commentable
 {
 	private Long id;
 	private User user;
+	private Tag tag;
 	private String title;
 	private String content;
 	private Date createDate;
 	private int commentCount;
-	private Date activeTime;
-	private VoteInform voteInform;
+	private int voteCount;
 	private CommentInform commentInform;
 	private boolean isVoted;
 
@@ -26,7 +26,10 @@ public class Question implements Serializable,Votable,Commentable
 
 	public String getActiveTimeShowString(){
 		DateFormat format = new SimpleDateFormat("yyyy年MM月dd日 HH时mm分ss秒");
-		return format.format(this.getActiveTime());
+		if (this.getCommentInform().getLastCommentTime()==null){
+			return "";
+		}
+		return format.format(this.getCommentInform().getLastCommentTime());
 	}
 
 	public Long getId()
@@ -89,27 +92,27 @@ public class Question implements Serializable,Votable,Commentable
 		this.commentCount = commentCount;
 	}
 
-	public Date getActiveTime()
+
+	public Tag getTag()
 	{
-		return activeTime;
+		return tag;
 	}
 
-	public void setActiveTime(Date activeTime)
+	public void setTag(Tag tag)
 	{
-		this.activeTime = activeTime;
-	}
-
-
-	@Override
-	public VoteInform getVoteInform()
-	{
-		return voteInform;
+		this.tag = tag;
 	}
 
 	@Override
-	public void setVoteInform(VoteInform voteInform)
+	public int getVoteCount()
 	{
-		this.voteInform = voteInform;
+		return voteCount;
+	}
+
+	@Override
+	public void setVoteCount(int voteCount)
+	{
+		this.voteCount = voteCount;
 	}
 
 	@Override

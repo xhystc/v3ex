@@ -21,9 +21,9 @@
          ">
             <a href="javasrcipt:"
                onclick="dovote('question',${commentPage.question.id})"
-               class="vote" id="vote-button-question-${commentPage.question.id}">^&nbsp;${commentPage.question.voteInform.voteCount}</a>
+               class="vote" id="vote-button-question-${commentPage.question.id}">^&nbsp;${commentPage.question.voteCount}</a>
         </div> &nbsp;
         <a href="${path}/user/${commentPage.question.user.id}">
             ${commentPage.question.user.name}
-        </a> · ${commentPage.question.createDateShowString} 发布· ${commentPage.question.commentCount} 次回复 &nbsp;</small>
+        </a> · ${commentPage.question.createDateShowString} 发布· ${commentPage.question.commentInform.commentCount} 次回复 &nbsp;</small>
 </div>

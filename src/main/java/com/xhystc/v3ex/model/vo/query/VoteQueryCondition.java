@@ -2,7 +2,7 @@ package com.xhystc.v3ex.model.vo.query;
 
 import java.util.Set;
 
-public class VoteQueryCondition
+public class VoteQueryCondition extends QueryCondition
 {
 	private Long userId;
 	private String parentType;

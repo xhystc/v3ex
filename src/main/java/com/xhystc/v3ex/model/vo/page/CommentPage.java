@@ -11,7 +11,7 @@ public class CommentPage
 	private List<Comment> comments;
 	private Question question;
 	private boolean isVoted;
-	private List<Tag> tags;
+	private Tag tag;
 
 	public List<Comment> getComments()
 	{
@@ -43,14 +43,14 @@ public class CommentPage
 		isVoted = voted;
 	}
 
-	public List<Tag> getTags()
+	public Tag getTag()
 	{
-		return tags;
+		return tag;
 	}
 
-	public void setTags(List<Tag> tags)
+	public void setTag(Tag tag)
 	{
-		this.tags = tags;
+		this.tag = tag;
 	}
 }
 

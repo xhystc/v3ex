@@ -1,8 +1,6 @@
 package com.xhystc.v3ex.service.impl;
 
-import com.xhystc.v3ex.commons.RedisUtils;
 import com.xhystc.v3ex.dao.QuestionDao;
-import com.xhystc.v3ex.dao.QuestionTagDao;
 import com.xhystc.v3ex.dao.TagDao;
 import com.xhystc.v3ex.model.Question;
 import com.xhystc.v3ex.model.Tag;
@@ -29,25 +27,22 @@ public class RedisCacheQuestionServiceImpl implements QuestionService,Initializi
 
 	static final private Logger logger = Logger.getLogger(RedisCacheQuestionServiceImpl.class);
 	static final private String ACTIVE_PREFIX = "question-active";
-	static final private String TAG_TOTAL_PREFIX = "question-total";
-	static final private String MODIFY_PREFIX = "question-modify";
-	static final private int FETCH_SIZE = 1000;
+	static final private int FETCH_SIZE = 5000;
 
 	private long timeout = 60*1000*3;
+	private int activeSize = 100000;
 
 	private JedisPool jedisPool;
 	private QuestionDao questionDao;
-	private QuestionTagDao questionTagDao;
 	private TagDao tagDao;
 
 
 	@Autowired
-	public RedisCacheQuestionServiceImpl(JedisPool jedisPool, QuestionDao questionDao,QuestionTagDao questionTagDao,TagDao tagDao)
+	public RedisCacheQuestionServiceImpl(JedisPool jedisPool, QuestionDao questionDao,TagDao tagDao)
 	{
 		this.jedisPool = jedisPool;
 		this.questionDao = questionDao;
 		this.jedisPool = jedisPool;
-		this.questionTagDao = questionTagDao;
 		this.tagDao = tagDao;
 	}
 
@@ -55,39 +50,29 @@ public class RedisCacheQuestionServiceImpl implements QuestionService,Initializi
 	@Override
 	public Question getQuestion(Long id)
 	{
-		Question question = questionDao.getQuestionById(id);
-		try(Jedis redis = jedisPool.getResource())
-		{
-			double active = redis.zscore(activeKey(),question.getId().toString());
-			Date activeTime = new Date();
-			activeTime.setTime((long) active);
-			question.setActiveTime(activeTime);
-		}
-		return question;
+		return questionDao.getQuestionById(id);
 	}
 
 	@Override
 	public List<Question> getQuestions(Long tagId, int page, int pageSize)
 	{
-		Set<Tuple> questionTuples;
+		Set<String> questionIds;
 		try(Jedis redis = jedisPool.getResource())
 		{
 			int offset = (page-1)*pageSize;
-			questionTuples = redis.zrevrangeWithScores(activeKey(tagId),offset,offset+pageSize-1);
+			questionIds = redis.zrevrange(activeKey(tagId),offset,offset+pageSize-1);
 		}
-		if(questionTuples.size()==0)
+		if(questionIds.size()==0)
 		{
 			return Collections.emptyList();
 		}
-		Map<Long,Integer> indexMap = new HashMap<>(questionTuples.size());
-		Map<Long,Long> activeMap = new HashMap<>(questionTuples.size());
-		Set<Long> ids = new HashSet<>(questionTuples.size());
+		Map<Long,Integer> indexMap = new HashMap<>(questionIds.size());
+		Set<Long> ids = new HashSet<>(questionIds.size());
 
 		int i=0;
-		for(Tuple tuple : questionTuples){
-			Long questionId = Long.parseLong(tuple.getElement());
+		for(String idStr : questionIds){
+			Long questionId = Long.parseLong(idStr);
 			indexMap.put(questionId,i++);
-			activeMap.put(questionId, (long) tuple.getScore());
 			ids.add(questionId);
 		}
 
@@ -99,9 +84,6 @@ public class RedisCacheQuestionServiceImpl implements QuestionService,Initializi
 		Question[] questionArray = new Question[questions.size()];
 
 		for(Question question : questions){
-			Date activeTime = new Date();
-			activeTime.setTime(activeMap.get(question.getId()));
-			question.setActiveTime(activeTime);
 			questionArray[indexMap.get(question.getId())] = question;
 		}
 
@@ -112,37 +94,30 @@ public class RedisCacheQuestionServiceImpl implements QuestionService,Initializi
 	public Long publishQuetion(User user, QuestionForm form)
 	{
 		Question question = new Question();
-		question.setActiveTime(new Date());
 		question.setContent(form.getContent());
-		question.setCreateDate(question.getActiveTime());
+		question.setCreateDate(new Date());
 		question.setTitle(form.getTitle());
 		question.setUser(user);
-
+		Tag tag = new Tag();
+		tag.setId(form.getTag());
+		question.setTag(tag);
 		questionDao.insertQuestion(question);
 
-		for(Long tag : form.getTags()){
-			questionTagDao.insertQuestionTag(question.getId(),tag);
-		}
-		tagDao.increaseCount(Arrays.asList(form.getTags()));
-		incraseRedisTotal(form.getTags());
-
-		upQuestion(question.getId());
+		tagDao.increaseCount(form.getTag());
+		upQuestion(question);
 		return question.getId();
 	}
 
 	@Override
-	public void upQuestion(Long questionId)
+	public void upQuestion(Question question)
 	{
 		try(Jedis redis = jedisPool.getResource())
 		{
-			List<Long> tagIds =  questionTagDao.getQuestionTagIds(questionId);
+			Long tagId = question.getTag().getId();
 
 			Pipeline pipeline = redis.pipelined();
-			for(Long tagId : tagIds){
-				pipeline.zadd(activeKey(tagId),System.currentTimeMillis(),questionId.toString());
-			}
-			pipeline.zadd(activeKey(),System.currentTimeMillis(),questionId.toString());
-			pipeline.sadd(modifyKey(),questionId.toString());
+			pipeline.zadd(activeKey(tagId),System.currentTimeMillis(),question.getId().toString());
+			pipeline.zadd(activeKey(),System.currentTimeMillis(),question.getId().toString());
 			pipeline.sync();
 		}
 	}
@@ -152,37 +127,24 @@ public class RedisCacheQuestionServiceImpl implements QuestionService,Initializi
 	{
 		try(Jedis redis = jedisPool.getResource())
 		{
-			String s = redis.get(totalKey(tagId));
-			return Integer.parseInt(s);
+			Long s = redis.zcard(activeKey(tagId));
+			return s.intValue();
 		}
 	}
+	@Override
 	public void storeQuestions(){
 		logger.info("redis cached question service start");
 		Long start = System.currentTimeMillis();
 
-		List<Tag> tags = tagDao.selectAll();
-
 		try(Jedis redis = jedisPool.getResource())
 		{
-			for(Tag tag :tags){
-				storeTotal(redis,tag);
-				for(int i=0;;i++){
-					List<Question> questions = getDBQuestions(i*FETCH_SIZE,FETCH_SIZE,tag.getId());
-					if (questions.size()==0)
-					{
-						break;
-					}
-					storeQuestions(redis,questions,tag.getId());
-				}
-			}
-			storeTotal(redis);
 			for(int i=0;;i++){
-				List<Question> questions = getDBQuestions(i*FETCH_SIZE,FETCH_SIZE,null);
-				storeQuestions(redis,questions,null);
-				if (questions.size()<FETCH_SIZE)
+				List<Question> questions = getDBQuestions(i*FETCH_SIZE,FETCH_SIZE);
+				if (questions.size()==0)
 				{
 					break;
 				}
+				storeActive(redis,questions);
 			}
 		}
 		System.out.println("store over:"+((System.currentTimeMillis()-start)/1000)+"s");
@@ -194,24 +156,29 @@ public class RedisCacheQuestionServiceImpl implements QuestionService,Initializi
 		logger.debug("question time out");
 		try(Jedis redis = jedisPool.getResource())
 		{
-			Set<String> modifies = redis.smembers(modifyKey());
+			List<Tag> tags = tagDao.selectAll();
+			Map<Long,Response<Long>> responseMap = new HashMap<>(tags.size());
 			Pipeline pipeline = redis.pipelined();
-			Map<String,Response<Double>> activeTimeMap = new HashMap<>(modifies.size());
-			for(String s : modifies){
-				activeTimeMap.put(s,pipeline.zscore(activeKey(),s));
+			for(Tag tag : tags){
+				responseMap.put(tag.getId(),pipeline.zcard(activeKey(tag.getId())));
 			}
 			pipeline.sync();
-			for(Map.Entry<String,Response<Double>> en : activeTimeMap.entrySet()){
-				Question question = new Question();
-				question.setId(Long.parseLong(en.getKey()));
-				Date date = new Date();
-				date.setTime(en.getValue().get().longValue());
-				question.setActiveTime(date);
-				questionDao.updateQuestion(question);
-			}
-			redis.del(modifyKey());
-		}
 
+			pipeline = redis.pipelined();
+			for(Tag tag : tags){
+				int size = responseMap.get(tag.getId()).get().intValue();
+				if(size<=activeSize){
+					continue;
+				}
+				pipeline.zremrangeByRank(activeKey(tag.getId()),0,size - activeSize-1);
+			}
+			pipeline.sync();
+			int size = redis.zcard(activeKey()).intValue();
+			if(size>activeSize){
+				redis.zremrangeByRank(activeKey(),0,size - activeSize-1);
+			}
+
+		}
 	}
 
 	@Override
@@ -228,56 +195,28 @@ public class RedisCacheQuestionServiceImpl implements QuestionService,Initializi
 	}
 
 
-	private void incraseRedisTotal(Long[] ids){
-		try(Jedis redis = jedisPool.getResource())
-		{
-			Pipeline pipeline = redis.pipelined();
-			for(Long id : ids){
-				pipeline.incr(totalKey(id));
-			}
-			pipeline.incr(totalKey());
-			pipeline.sync();
-		}
-	}
-	private List<Question> getDBQuestions(int offset,int rows,Long tagId){
+
+	private List<Question> getDBQuestions(int offset,int rows){
 		QuestionQueryCondition condition = new QuestionQueryCondition();
 		condition.setOffset(offset);
 		condition.setRows(rows);
-		condition.setTagId(tagId);
 		condition.setNeedOrder(false);
 		return questionDao.selectQuestions(condition);
 	}
-	private void storeQuestions(Jedis redis,List<Question> questions,Long tagId){
+	private void storeActive(Jedis redis, List<Question> questions){
 		Pipeline pipeline = redis.pipelined();
 		for (Question question : questions){
-			pipeline.zadd(activeKey(tagId),question.getActiveTime().getTime(),question.getId().toString());
+			pipeline.zadd(activeKey(question.getTag().getId()),question.getCreateDate().getTime(),question.getId().toString());
+			pipeline.zadd(activeKey(),question.getCreateDate().getTime(),question.getId().toString());
 		}
 		pipeline.sync();
 	}
-	private void storeTotal(Jedis redis,Tag tag){
-		redis.set(totalKey(tag.getId()),tag.getQuestionCount()+"");
-	}
 
-	private void storeTotal(Jedis redis){
-		int total = questionDao.total(null);
-		redis.set(totalKey(),total+"");
-	}
-
-	private static String modifyKey(){
-		return MODIFY_PREFIX;
-	}
 	private static String activeKey(){
 		return ACTIVE_PREFIX;
 	}
 	private static String activeKey(Long tagId){
 		return tagId==null?ACTIVE_PREFIX:ACTIVE_PREFIX+"-"+tagId;
-	}
-
-	private static String totalKey(){
-		return TAG_TOTAL_PREFIX;
-	}
-	private static String totalKey(Long tagId){
-		return tagId==null?TAG_TOTAL_PREFIX:TAG_TOTAL_PREFIX+"-"+tagId;
 	}
 
 	public long getTimeout()
@@ -288,6 +227,16 @@ public class RedisCacheQuestionServiceImpl implements QuestionService,Initializi
 	public void setTimeout(long timeout)
 	{
 		this.timeout = timeout;
+	}
+
+	public int getActiveSize()
+	{
+		return activeSize;
+	}
+
+	public void setActiveSize(int activeSize)
+	{
+		this.activeSize = activeSize;
 	}
 }
 

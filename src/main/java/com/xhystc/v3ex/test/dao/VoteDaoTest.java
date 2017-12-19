@@ -2,6 +2,7 @@ package com.xhystc.v3ex.test.dao;
 
 import com.xhystc.v3ex.dao.VoteDao;
 import com.xhystc.v3ex.model.Vote;
+import com.xhystc.v3ex.model.VoteInform;
 import com.xhystc.v3ex.model.vo.query.VoteQueryCondition;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -80,6 +81,16 @@ public class VoteDaoTest
 		}
 	}
 
+	@Transactional(rollbackFor = Exception.class)
+	@Rollback(false)
+	@Test
+	public void incVote(){
+		VoteInform voteInform = new VoteInform();
+		voteInform.setType("question");
+		voteInform.setVoteCount(0);
+		voteInform.setVid(2L);
+
+	}
 
 	/*@Transactional(rollbackFor = Exception.class)
 	@Rollback(false)

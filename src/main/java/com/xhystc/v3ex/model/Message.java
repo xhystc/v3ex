@@ -11,6 +11,7 @@ public class Message implements Serializable
 	private String content;
 	private Date sendDate;
 	private Boolean isRead;
+	private String conversationId;
 
 	public Long getId()
 	{
@@ -32,15 +33,6 @@ public class Message implements Serializable
 		this.from = from;
 	}
 
-	public Boolean getRead()
-	{
-		return isRead;
-	}
-
-	public void setRead(Boolean read)
-	{
-		isRead = read;
-	}
 
 	public User getTo()
 
@@ -81,5 +73,15 @@ public class Message implements Serializable
 	public void setIsRead(Boolean read)
 	{
 		isRead = read;
+	}
+
+	public String getConversationId()
+	{
+		return conversationId;
+	}
+
+	public void setConversationId(String conversationId)
+	{
+		this.conversationId = conversationId;
 	}
 }

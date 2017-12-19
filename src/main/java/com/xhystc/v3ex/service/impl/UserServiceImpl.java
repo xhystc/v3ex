@@ -39,6 +39,12 @@ public class UserServiceImpl implements UserService
 	}
 
 	@Override
+	public User getUserById(Long id)
+	{
+		return userDao.getUserById(id);
+	}
+
+	@Override
 	public Set<String> getUserRoles(String username)
 	{
 		Set<String> set = new HashSet<>();

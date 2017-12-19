@@ -3,7 +3,6 @@ package com.xhystc.v3ex.service.impl;
 import com.xhystc.v3ex.commons.RedisUtils;
 
 import com.xhystc.v3ex.dao.VoteDao;
-import com.xhystc.v3ex.dao.VoteInformDao;
 import com.xhystc.v3ex.model.*;
 import com.xhystc.v3ex.model.vo.query.VoteInformQueryCondition;
 import com.xhystc.v3ex.model.vo.query.VoteQueryCondition;
@@ -39,16 +38,14 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 	private String[] votableList = {"question","comment"};
 	private VoteDao voteDao;
 	private JedisPool jedisPool;
-	private VoteInformDao voteInformDao;
 	private long timeout = 1000*60*3;
 
 
 	@Autowired
-	public RedisCacheVoteServiceImpl(VoteDao voteDao,  VoteInformDao voteInformDao, JedisPool jedisPool)
+	public RedisCacheVoteServiceImpl(VoteDao voteDao, JedisPool jedisPool)
 	{
 		this.voteDao = voteDao;
 		this.jedisPool = jedisPool;
-		this.voteInformDao = voteInformDao;
 	}
 
 
@@ -80,11 +77,9 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 		try (Jedis redis = jedisPool.getResource())
 		{
 			VoteInform voteInform = getVoteInform(redis, votable.type(),votable.id());
-			if(voteInform == null){
-				voteInform = new VoteInform();
-				voteInform.setId(VoteInform.voteInformId(votable));
+			if (voteInform != null){
+				votable.setVoteCount(voteInform.getVoteCount());
 			}
-			votable.setVoteInform(voteInform);
 			if (userId != null && userId > 0)
 			{
 				votable.setIsVoted(getIsVote(redis,userId,votable.type(),votable.id()));
@@ -185,9 +180,7 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 		for(Long id : ids){
 			Map<String,String> informMap = resposeMap.get(id).get();
 			VoteInform voteInform = mapToInform(informMap,type,id);
-			if(voteInformDao.updateVoteInform(voteInform)<=0){
-				voteInformDao.insertVoteInform(voteInform);
-			}
+			voteDao.updateVoteCount(type,id,voteInform.getVoteCount());
 			if(!RedisUtils.isActive(redis,activeKey(type),id.toString())){
 				redis.del(informKey(type,id));
 			}
@@ -238,7 +231,6 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 
 	private boolean getIsVote(Jedis redis, Long userId, String type, Long id)
 	{
-
 		String key = userkey(userId, type);
 		boolean ret = redis.sismember(key,id.toString());
 		if (ret)
@@ -296,11 +288,9 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 		if (informMap != null && informMap.size()>0)
 		{
 			voteInform = mapToInform(informMap,type,id);
-		} else
-		{
-			voteInform = voteInformDao.getVoteInformById(VoteInform.voteInformId(type,id));
+			return voteInform;
 		}
-		return voteInform;
+		return null;
 	}
 
 	private void fetchVoteInforms(Jedis redis, List<? extends Votable> votables)
@@ -314,45 +304,13 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 		}
 		pipeline.sync();
 
-		VoteInformQueryCondition condition = new VoteInformQueryCondition();
-		condition.setInclude(new HashSet<>(votables.size()));
 		for (int i = 0; i < responses.size(); i++)
 		{
 			Map<String, String> informMap = responses.get(i).get();
 			Votable votable = votables.get(i);
-			if (informMap == null || informMap.size() == 0)
+			if (informMap != null && informMap.size() > 0)
 			{
-				condition.getInclude().add(VoteInform.voteInformId(votable));
-				votable.setVoteInform(null);
-			} else
-			{
-				votable.setVoteInform(mapToInform(informMap,votable.type(),votable.id()));
-			}
-		}
-
-		if (condition.getInclude().size()>0){
-			List<VoteInform> voteInforms = voteInformDao.selectVoteInform(condition);
-			for(Votable votable : votables){
-				if(votable.getVoteInform()==null)
-				{
-					boolean find = false;
-					Iterator<VoteInform> iterator = voteInforms.iterator();
-					while (iterator.hasNext()){
-						VoteInform voteInform = iterator.next();
-						if(voteInform.getId().equals(VoteInform.voteInformId(votable))){
-							votable.setVoteInform(voteInform);
-							iterator.remove();
-							find = true;
-							break;
-						}
-					}
-					if (!find){
-						VoteInform voteInform = new VoteInform();
-						voteInform.setId(VoteInform.voteInformId(votable));
-						voteInform.setVoteCount(0);
-						votable.setVoteInform(voteInform);
-					}
-				}
+				votable.setVoteCount(mapToInform(informMap,votable.type(),votable.id()).getVoteCount());
 			}
 		}
 
@@ -363,7 +321,7 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 		if(needCache(type,id) || redis.exists(informKey(type,id))){
 			return storeVoteInform(redis,userId,type,id,i);
 		}else {
-			return incDBVote(userId,type,id,i);
+			return voteDao.incVoteCount(type,id,i)>0;
 		}
 
 	}
@@ -377,19 +335,17 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 		if (!redis.exists(informKey))
 		{
 			VoteInform voteInform;
-			if(!incDBVote(userId,type,id,i)){
-				DateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-
-				voteInform = new VoteInform();
-				voteInform.setVoteCount(1);
-				voteInform.setLastVoteTime(new Date());
-				voteInform.setId(VoteInform.voteInformId(type,id));
-				voteInform.setLastVoteUser(userId);
-
-			}else {
-				voteInform = voteInformDao.getVoteInformById(VoteInform.voteInformId(type, id));
+			voteInform = new VoteInform();
+			voteInform.setVoteCount(i);
+			voteInform.setLastVoteTime(new Date());
+			voteInform.setVid(id);
+			voteInform.setType(type);
+			voteInform.setLastVoteUser(userId);
+			if(voteDao.incVoteCount(type,id,i)<=0){
+				return false;
 			}
-
+			int voteCount = voteDao.getVoteCount(type,id);
+			voteInform.setVoteCount(voteCount);
 			return redis.hmset(informKey, informToMap(voteInform)) != null;
 
 		} else
@@ -397,7 +353,6 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 			Pipeline pipeline = redis.pipelined();
 			if (i > 0)
 			{
-
 				DateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 				pipeline.hset(informKey, "lastVoteUser", userId.toString());
 				pipeline.hset(informKey, "lastVoteDate", format.format(new Date()));
@@ -430,19 +385,6 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 		}
 		return true;
 	}
-
-	private boolean incDBVote( Long userId,String type,Long id, int i){
-		VoteInform voteInform = new VoteInform();
-		voteInform.setVoteCount(i);
-		voteInform.setId(VoteInform.voteInformId(type,id));
-		if(i>0){
-			voteInform.setLastVoteUser(userId);
-			voteInform.setLastVoteTime(new Date());
-		}
-
-		return voteInformDao.increaseVoteInform(voteInform)>0;
-	}
-
 
 
 	private static String activeKey(String type)
@@ -481,7 +423,8 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 		voteInform.setLastVoteUser(userId);
 		voteInform.setVoteCount(votes);
 		voteInform.setLastVoteTime(date);
-		voteInform.setId(VoteInform.voteInformId(type,id));
+		voteInform.setVid(id);
+		voteInform.setType(type);
 
 		return voteInform;
 	}

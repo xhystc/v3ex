@@ -14,10 +14,13 @@ import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.SessionAttribute;
+import org.springframework.web.bind.annotation.SessionAttributes;
 
 import javax.validation.Valid;
 import java.util.List;
 
+@SessionAttributes(value = {"unread"})
 @Controller
 public class QuestionController
 {
@@ -30,16 +33,21 @@ public class QuestionController
 	private TagService tagService;
 	private QuestionService questionService;
 	private CommentService commentService;
-
+	private MessageService messageService;
 
 
 	@Autowired
-	public QuestionController(VoteService voteService, TagService tagService, @Qualifier("redisCacheQuestionServiceImpl") QuestionService questionService, CommentService commentService)
+	public QuestionController(VoteService voteService,
+	                          TagService tagService,
+	                          @Qualifier("redisCacheQuestionServiceImpl") QuestionService questionService,
+	                          CommentService commentService,
+	                          MessageService messageService)
 	{
 		this.voteService = voteService;
 		this.tagService = tagService;
 		this.questionService = questionService;
 		this.commentService = commentService;
+		this.messageService = messageService;
 	}
 
 
@@ -55,6 +63,10 @@ public class QuestionController
 		model.addAttribute("pageButtons",FormUtils.pageButtons(page,lastPage));
 		model.addAttribute("currentPage",page);
 		model.addAttribute("lastPage",lastPage);
+		User currentUser = FormUtils.getCurrentUser();
+		if(currentUser!=null){
+			model.addAttribute("unread",messageService.unread(currentUser.getId()));
+		}
 		return "v2ex";
 	}
 
@@ -86,7 +98,6 @@ public class QuestionController
 	}
 
 	private List<Question> doQuestions(int page,Long tagId,Model model){
-
 		List<Question> questions = questionService.getQuestions(tagId,page,pageSize);
 		Long userId = FormUtils.getCurrentUser()==null? null : FormUtils.getCurrentUser().getId();
 		voteService.fetchUserVotes(userId,questions);

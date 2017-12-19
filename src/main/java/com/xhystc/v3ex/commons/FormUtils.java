@@ -91,6 +91,9 @@ public class FormUtils
 
 	public static List<Integer> pageButtons(int currPage,int lastPage){
 		List<Integer> ret  = new ArrayList<>();
+		if (lastPage<=0){
+			return ret;
+		}
 		if(currPage - 1 < 4){
 			for(int i=1;i<=currPage;i++){
 				ret.add(i);

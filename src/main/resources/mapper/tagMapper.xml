@@ -14,10 +14,7 @@
         VALUES (#{name},#{description},#{icon},#{count})
     </insert>
     <update id="increaseCount" >
-        UPDATE tag SET question_count = question_count+1 WHERE id in
-        <foreach collection="list" item="t_id" open="(" close=")" separator=",">
-            #{t_id}
-        </foreach>
+        UPDATE tag SET question_count = question_count+1 WHERE id = #{arg0}
     </update>
 
     <delete id="deleteTag">

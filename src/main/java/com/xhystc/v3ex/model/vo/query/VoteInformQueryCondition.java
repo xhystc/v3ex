@@ -3,7 +3,7 @@ package com.xhystc.v3ex.model.vo.query;
 import java.util.Date;
 import java.util.Set;
 
-public class VoteInformQueryCondition
+public class VoteInformQueryCondition extends QueryCondition
 {
 	private String id;
 	private Date lastVoteTime;

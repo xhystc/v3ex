@@ -31,9 +31,8 @@
          ">
         <a href="javasrcipt:"
            onclick="dovote('question',${question.id})"
-           class="vote" id="vote-button-question-${question.id}">^&nbsp;${question.voteInform.voteCount}</a>
+           class="vote" id="vote-button-question-${question.id}">^&nbsp;${question.voteCount}</a>
     </div> &nbsp;
-                        <a class="node" href="/tag/programmer">程序员</a> &nbsp;•&nbsp;
                     <strong>
                         <a href="/user/${question.user.id}">${question.user.name}</a>
                     </strong> &nbsp;•&nbsp; ${question.createDateShowString}

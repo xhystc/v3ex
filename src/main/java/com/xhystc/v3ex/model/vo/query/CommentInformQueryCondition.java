@@ -3,7 +3,7 @@ package com.xhystc.v3ex.model.vo.query;
 import java.util.Date;
 import java.util.Set;
 
-public class CommentInformQueryCondition
+public class CommentInformQueryCondition extends QueryCondition
 {
 	private String id;
 	private Date lastCommentTime;

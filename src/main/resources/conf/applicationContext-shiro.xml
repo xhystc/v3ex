@@ -21,9 +21,9 @@
         <property name="filterChainDefinitions">
             <value>
                 /logout=logout
-                /publish_comment=roles[user]
-                /publish_question=roles[user]
-                /service/**==roles[user]
+                /service/**=roles[user]
+                /message=roles[user]
+                /publish*=roles[user]
             </value>
         </property>
     </bean>

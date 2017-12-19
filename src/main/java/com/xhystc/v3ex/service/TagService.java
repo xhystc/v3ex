@@ -8,5 +8,4 @@ public interface TagService
 {
 	List<Tag> getAllTag();
 	List<Tag> getTagsByName(String name);
-	List<Tag> getQuestionTags(Long quetionId);
 }

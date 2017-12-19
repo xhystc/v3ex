@@ -32,7 +32,7 @@
                 <textarea name="content" style="resize: none; width: 753px;height:293px;"></textarea>
             </div>
             <div class="cell">
-                <select name="tags" id="nodes" style="width: 300px; font-size: 14px;" multiple data-placeholder="请选择一个标签">
+                <select name="tag" id="nodes" style="width: 300px; font-size: 14px;" data-placeholder="请选择一个标签">
                     <option></option>
                     <c:forEach items="${tags}" var="tag">
                         <option value="${tag.id}">${tag.name}</option>

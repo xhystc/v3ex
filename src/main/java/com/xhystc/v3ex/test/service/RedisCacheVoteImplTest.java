@@ -66,7 +66,7 @@ public class RedisCacheVoteImplTest
 		List<Question> questions = questionDao.selectQuestions(condition);
 		voteService.fetchUserVotes(38L,questions);
 		for(Question question :questions){
-			System.out.println(question.getId()+":"+question.getIsVoted()+":"+question.getVoteInform().getVoteCount());
+			System.out.println(question.getId()+":"+question.getIsVoted()+":"+question.getVoteCount());
 		}
 	}
 

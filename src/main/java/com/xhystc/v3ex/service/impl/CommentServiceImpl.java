@@ -1,17 +1,12 @@
 package com.xhystc.v3ex.service.impl;
 
-import com.xhystc.v3ex.commons.FormUtils;
 import com.xhystc.v3ex.dao.CommentDao;
 import com.xhystc.v3ex.dao.CommentInformDao;
-import com.xhystc.v3ex.dao.QuestionTagDao;
 import com.xhystc.v3ex.model.*;
-import com.xhystc.v3ex.model.vo.page.CommentPage;
 import com.xhystc.v3ex.model.vo.query.CommentInformQueryCondition;
 import com.xhystc.v3ex.model.vo.query.CommentQueryCondition;
 import com.xhystc.v3ex.service.CommentService;
-import com.xhystc.v3ex.service.QuestionService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,16 +21,14 @@ public class CommentServiceImpl implements CommentService
 {
 	private CommentDao commentDao;
 	private CommentInformDao commentInformDao;
-	private QuestionTagDao questionTagDao;
 
 
 
 	@Autowired
-	public CommentServiceImpl(CommentDao commentDao, CommentInformDao commentInformDao, QuestionTagDao questionTagDao)
+	public CommentServiceImpl(CommentDao commentDao, CommentInformDao commentInformDao)
 	{
 		this.commentDao = commentDao;
 		this.commentInformDao = commentInformDao;
-		this.questionTagDao = questionTagDao;
 	}
 
 
@@ -45,7 +38,7 @@ public class CommentServiceImpl implements CommentService
 	{
 		commentDao.insertComment(comment);
 		System.out.println(comment.getId());
-		String commentInformId = CommentInform.commentInformId(comment.getParentType(),comment.getParentId());
+		String commentInformId = CommentInform.commentInformId("question",comment.getQuestion().getId());
 		CommentInform commentInform = new CommentInform();
 		commentInform.setId(commentInformId);
 		commentInform.setLastCommentTime(new Date());
@@ -58,12 +51,11 @@ public class CommentServiceImpl implements CommentService
 	}
 
 	@Override
-	public List<Comment> getQuestionComments(String type, Long id, int page, int pageSize)
+	public List<Comment> getQuestionComments(Long id, int page, int pageSize)
 	{
 		CommentQueryCondition commentQueryCondition = new CommentQueryCondition();
 		commentQueryCondition.setOffset((page-1)*pageSize);
 		commentQueryCondition.setRows(pageSize);
-		commentQueryCondition.setParentType(type);
 		commentQueryCondition.setParentId(id);
 
 		List<Comment> comments = commentDao.selectComments(commentQueryCondition);
