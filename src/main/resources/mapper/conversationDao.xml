@@ -2,10 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.xhystc.v3ex.dao.ConversationDao">
     <resultMap id="conversationResultMapper" type="com.xhystc.v3ex.model.Conversation">
-        <id column="id" property="id"/>
+        <id column="cid" property="id"/>
         <result column="last_active_time" property="lastActiveTime"/>
         <association property="lastMessage" column="last_message"
-                     select="com.xhystc.v3ex.dao.MessageDao.getMessageById"/>
+                     resultMap="com.xhystc.v3ex.dao.MessageDao.messageResultMapper"/>
     </resultMap>
 
     <insert id="insertConversation">
@@ -21,7 +21,13 @@
         where id = #{id}
     </update>
     <select id="selectUserConversation" resultMap="com.xhystc.v3ex.dao.ConversationDao.conversationResultMapper">
-        SELECT c.* FROM conversation c WHERE c.id IN
+        SELECT c.*,c.id AS cid,m.*, u1.id as from_id,u1.regist_date AS from_regist_date,u1.name AS  from_name,u1.email AS from_email,u1.iconUrl AS from_iconUrl,u1.password AS from_password,u1.salt AS from_salt,u1.is_locked AS from_is_locked,
+                                    u2.id as to_id,u2.regist_date  AS to_regist_date,u2.name AS to_name,u2.email AS to_email,u2.iconUrl AS to_iconUrl,u2.password AS to_password,u2.salt AS to_salt,u2.is_locked AS to_is_locked
+        FROM conversation c
+        LEFT JOIN message m ON c.last_message = m.id
+        LEFT JOIN user u1 ON m.from_id = u1.id
+         LEFT JOIN user u2 ON m.to_id = u2.id
+        WHERE c.id IN
         (SELECT uc.conversation_id FROM user_conversation uc WHERE uc.user_id = #{arg0})
         ORDER BY last_active_time desc
     </select>

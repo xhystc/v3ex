@@ -37,7 +37,8 @@
         u2.id as to_id,u2.regist_date  AS to_regist_date,u2.name AS to_name,u2.email AS to_email,u2.iconUrl AS to_iconUrl,u2.password AS to_password,u2.salt AS to_salt,u2.is_locked AS to_is_locked
         from message m
             LEFT JOIN user u1 on m.from_id=u1.id
-            LEFT JOIN user u2 on m.to_id =u2.id where m.id = #{_parameter}
+            LEFT JOIN user u2 on m.to_id =u2.id
+        where m.id = #{_parameter}
     </select>
 
     <insert id="insertMessage" parameterType="com.xhystc.v3ex.model.Message"  useGeneratedKeys="true" keyProperty="id" >

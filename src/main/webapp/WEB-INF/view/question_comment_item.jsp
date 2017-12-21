@@ -5,6 +5,7 @@
   Time: 9:51
   To change this template use File | Settings | File Templates.
 --%>
+<%@ taglib prefix="my" uri="/WEB-INF/tld/myutil.tld"%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <c:forEach items="${commentPage.comments}" var="comment">
     <div id="comment-item-${comment.id}" class="cell">
@@ -29,7 +30,7 @@
                     </div>
                     <div class="sep3"></div>
                     <strong><a href="/user/${comment.user.id}" class="dark">${comment.user.name}</a></strong>&nbsp; &nbsp;
-                    <span class="ago">${comment.sendDateShowString}</span>
+                    <span class="ago">${my:dateFrom(comment.sendDate)}</span>
                     <div class="sep5"></div>
                     <div class="reply_content">${comment.content}</div>
                 </td>

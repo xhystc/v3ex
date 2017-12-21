@@ -5,6 +5,7 @@
   Time: 9:41
   To change this template use File | Settings | File Templates.
 --%>
+<%@ taglib prefix="my" uri="/WEB-INF/tld/myutil.tld"%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <div class="header">
     <div class="fr"><a href="${path}/user/${question.user.id}"><img
@@ -25,5 +26,5 @@
         </div> &nbsp;
         <a href="${path}/user/${commentPage.question.user.id}">
             ${commentPage.question.user.name}
-        </a> · ${commentPage.question.createDateShowString} 发布· ${commentPage.question.commentInform.commentCount} 次回复 &nbsp;</small>
+        </a> · ${my:dateFrom(commentPage.question.createDate)} 发布· ${commentPage.question.commentInform.commentCount} 次回复 &nbsp;</small>
 </div>

@@ -53,7 +53,7 @@
                     </td>
                     <td valign="middle">
                         <span class="fade">
-                            <a href="${path}/user/${conversation.lastMessage.from.id}"><strong>${conversation.lastMessage.from.name}</strong></a>
+                            ${my:showConversation(path,currentUser, conversation.lastMessage)}
                             :
                         </span> &nbsp;
                         <span class="snow">${my:dateFrom(conversation.lastMessage.sendDate)}</span>

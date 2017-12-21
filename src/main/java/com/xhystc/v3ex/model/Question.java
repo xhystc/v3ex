@@ -1,7 +1,5 @@
 package com.xhystc.v3ex.model;
 
-import com.xhystc.v3ex.commons.DateUtils;
-
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -19,10 +17,6 @@ public class Question implements Serializable,Votable,Commentable
 	private int voteCount;
 	private CommentInform commentInform;
 	private boolean isVoted;
-
-	public String getCreateDateShowString(){
-		return DateUtils.dateFrom(this.getCreateDate());
-	}
 
 	public String getActiveTimeShowString(){
 		DateFormat format = new SimpleDateFormat("yyyy年MM月dd日 HH时mm分ss秒");

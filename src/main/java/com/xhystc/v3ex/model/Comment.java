@@ -1,8 +1,5 @@
 package com.xhystc.v3ex.model;
 
-import com.xhystc.v3ex.commons.DateUtils;
-import com.xhystc.v3ex.commons.Markdown;
-
 import java.io.Serializable;
 import java.util.Date;
 
@@ -17,11 +14,6 @@ public class Comment implements Serializable,Votable,Commentable
 	private int voteCount;
 	private CommentInform commentInform;
 	private boolean isVoted;
-
-
-	public String getSendDateShowString(){
-		return DateUtils.dateFrom(this.getSendDate());
-	}
 
 
 	public Long getId()

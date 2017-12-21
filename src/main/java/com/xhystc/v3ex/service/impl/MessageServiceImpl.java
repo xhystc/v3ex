@@ -84,6 +84,10 @@ public class MessageServiceImpl implements MessageService
 	@Override
 	public int unread(Long userId)
 	{
+		if (userId==null)
+		{
+			return 0;
+		}
 		try(Jedis redis = jedisPool.getResource())
 		{
 			String s = redis.get(unreadKey(userId));

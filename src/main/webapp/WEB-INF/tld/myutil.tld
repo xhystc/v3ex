@@ -7,7 +7,13 @@
 
     <function>
         <name>dateFrom</name>
-        <function-class>com.xhystc.v3ex.commons.DateUtils</function-class>
+        <function-class>com.xhystc.v3ex.commons.DisplayUtils</function-class>
         <function-signature>java.lang.String dateFrom(java.util.Date)</function-signature>
     </function>
+    <function>
+        <name>showConversation</name>
+        <function-class>com.xhystc.v3ex.commons.DisplayUtils</function-class>
+        <function-signature>java.lang.String showConversation(java.lang.String,com.xhystc.v3ex.model.User,com.xhystc.v3ex.model.Message)</function-signature>
+    </function>
+
 </taglib>

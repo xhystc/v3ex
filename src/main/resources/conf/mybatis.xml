@@ -6,6 +6,9 @@
     <settings>
         <!-- 打印查询语句 -->
         <setting name="logImpl" value="STDOUT_LOGGING" />
+        <!-- 打开延迟加载的开关 -->
+        <setting name="lazyLoadingEnabled" value="true" />
+        <!-- 将积极加载改为消息加载即按需加载 -->
+        <setting name="aggressiveLazyLoading" value="false"/>
     </settings>
-
 </configuration>
