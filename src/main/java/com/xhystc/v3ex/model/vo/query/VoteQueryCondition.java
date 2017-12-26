@@ -1,11 +1,13 @@
 package com.xhystc.v3ex.model.vo.query;
 
+import com.xhystc.v3ex.model.EntityType;
+
 import java.util.Set;
 
 public class VoteQueryCondition extends QueryCondition
 {
 	private Long userId;
-	private String parentType;
+	private EntityType parentType;
 	private Long parentId;
 	private Set<Long> include;
 
@@ -19,12 +21,12 @@ public class VoteQueryCondition extends QueryCondition
 		this.userId = userId;
 	}
 
-	public String getParentType()
+	public EntityType getParentType()
 	{
 		return parentType;
 	}
 
-	public void setParentType(String parentType)
+	public void setParentType(EntityType parentType)
 	{
 		this.parentType = parentType;
 	}

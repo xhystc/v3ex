@@ -2,7 +2,7 @@ package com.xhystc.v3ex.model;
 
 public interface Votable
 {
-	String type();
+	EntityType type();
 	Long id();
 	int getVoteCount();
 	void setVoteCount(int vote);

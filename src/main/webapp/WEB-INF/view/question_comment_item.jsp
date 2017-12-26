@@ -18,9 +18,9 @@
                 <td align="left" width="auto" valign="top">
                     <div class="fr">
                         <div id="thank_area_5031457" class="thank_area">
-                            <a href="#;" onclick="dovote('comment',${comment.id})" class="thank">支持</a>
+                            <a href="javascript:void(0);" onclick="dovote('comment',${comment.id})" class="thank"><small>赞同</small></a>
                         </div> &nbsp;
-                        <a href="#;" onclick="replyOne('EmmaYang');"><img src="//cdn.v2ex.com/static/img/reply.png" alt="Reply" align="absmiddle" border="0"></a> &nbsp;&nbsp;
+                        <a href="#;" onclick="replyOne('EmmaYang');"><img src="${path}/static/img/reply.png" alt="Reply" align="absmiddle" border="0"></a> &nbsp;&nbsp;
                         <span  id="comment-item-agree-${comment.id}" class="no
                          <c:if test='${comment.isVoted}'>
                              voted
@@ -32,7 +32,7 @@
                     <strong><a href="/user/${comment.user.id}" class="dark">${comment.user.name}</a></strong>&nbsp; &nbsp;
                     <span class="ago">${my:dateFrom(comment.sendDate)}</span>
                     <div class="sep5"></div>
-                    <div class="reply_content">${comment.content}</div>
+                    <div class="reply_content">${my:linkConvert(path,comment.content)}</div>
                 </td>
             </tr>
             </tbody></table>

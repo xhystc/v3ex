@@ -2,6 +2,7 @@ package com.xhystc.v3ex.test.service;
 
 import com.xhystc.v3ex.commons.RedisUtils;
 import com.xhystc.v3ex.dao.QuestionDao;
+import com.xhystc.v3ex.model.EntityType;
 import com.xhystc.v3ex.model.Question;
 import com.xhystc.v3ex.model.Vote;
 import com.xhystc.v3ex.model.VoteInform;
@@ -37,15 +38,15 @@ public class RedisCacheVoteImplTest
 	@Test
 	public void doVote()
 	{
-		System.out.println(voteService.doVote(7L,"question",38L));
-		System.out.println(voteService.doVote(7L,"question",31L));
+		System.out.println(voteService.doVote(7L, EntityType.question,38L));
+		System.out.println(voteService.doVote(7L,EntityType.question,31L));
 	}
 
 	@Test
 	public void disVote()
 	{
-		System.out.println(voteService.disVote(34L,"question",1L));
-		System.out.println(voteService.disVote(35L,"question",1L));
+		System.out.println(voteService.disVote(34L,EntityType.question,1L));
+		System.out.println(voteService.disVote(35L,EntityType.question,1L));
 	}
 
 	@Test
@@ -73,19 +74,11 @@ public class RedisCacheVoteImplTest
 	@Test
 	public void isVote()
 	{
-		System.out.println(voteService.isVote(35L,"question",2L));
-		System.out.println(voteService.isVote(35L,"question",33L));
+		System.out.println(voteService.isVote(35L,EntityType.question,2L));
+		System.out.println(voteService.isVote(35L,EntityType.question,33L));
 	}
 
-	@Test
-	public void voteInform()
-	{
-		VoteInform voteInform = voteService.voteInform("question",28L);
-		System.out.println(voteInform.getVoteCount());
-		voteInform = voteService.voteInform("question",29L);
-		System.out.println(voteInform.getVoteCount());
 
-	}
 
 	@Test
 	public void runTest()

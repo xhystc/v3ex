@@ -2,6 +2,7 @@ package com.xhystc.v3ex.test.dao;
 
 import com.xhystc.v3ex.dao.QuestionDao;
 import com.xhystc.v3ex.dao.UserDao;
+import com.xhystc.v3ex.model.EntityType;
 import com.xhystc.v3ex.model.Question;
 import com.xhystc.v3ex.model.User;
 import com.xhystc.v3ex.model.vo.query.QuestionQueryCondition;
@@ -35,6 +36,7 @@ public class QuestionDaoTest
 	@Rollback(false)
 	public void getQuestionById() throws Exception
 	{
+		System.out.println(EntityType.valueOf("question"));
 		Question question = questionDao.getQuestionById(47L);
 		System.out.println(question.getCommentCount());
 	}

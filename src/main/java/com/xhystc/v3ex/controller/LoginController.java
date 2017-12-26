@@ -1,7 +1,7 @@
 package com.xhystc.v3ex.controller;
 
 
-import com.xhystc.v3ex.commons.FormUtils;
+import com.xhystc.v3ex.commons.CommonUtils;
 import com.xhystc.v3ex.model.vo.form.LoginForm;
 import com.xhystc.v3ex.model.vo.form.UserRegistForm;
 import com.xhystc.v3ex.model.vo.json.GeneralResultBean;
@@ -51,7 +51,7 @@ public class LoginController
 	{
 		logger.info("user:"+form.getUsername()+" login");
 
-		FormUtils.escapeFormModle(form);
+		CommonUtils.escapeFormModle(form);
 		UsernamePasswordToken usernamePasswordToken = new UsernamePasswordToken(form.getUsername(),form.getPassword());
 		Subject subject = SecurityUtils.getSubject();
 		List<Problem> problems = new ArrayList<>(3);
@@ -101,12 +101,12 @@ public class LoginController
 	@RequestMapping("/do_regist")
 	public String doRegist(@Valid UserRegistForm form, Errors errors, Model mv,HttpSession session){
 
-		if(FormUtils.handleErrors(mv,errors))
+		if(CommonUtils.handleErrors(mv,errors))
 		{
 			return regist();
 		}
 
-		FormUtils.escapeFormModle(form);
+		CommonUtils.escapeFormModle(form);
 		Set<Problem> problems = userService.userRegist(form);
 		if(problems==null || problems.size() == 0){
 			return "redirect:/index";

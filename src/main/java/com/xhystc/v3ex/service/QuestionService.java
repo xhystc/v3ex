@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface QuestionService
 {
-	Question getQuestion(Long id);
+	Question getQuestionById(Long id);
 	List<Question> getQuestions(Long tagId,int page,int pageSize);
 	Long publishQuetion(User user, QuestionForm form);
 	void upQuestion(Question question);

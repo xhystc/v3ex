@@ -16,4 +16,10 @@
         <function-signature>java.lang.String showConversation(java.lang.String,com.xhystc.v3ex.model.User,com.xhystc.v3ex.model.Message)</function-signature>
     </function>
 
+    <function>
+        <name>linkConvert</name>
+        <function-class>com.xhystc.v3ex.commons.DisplayUtils</function-class>
+        <function-signature>java.lang.String linkConvert(java.lang.String,java.lang.String)</function-signature>
+    </function>
+
 </taglib>

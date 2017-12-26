@@ -101,9 +101,9 @@ public class Comment implements Serializable,Votable,Commentable
 	}
 
 	@Override
-	public String type()
+	public EntityType type()
 	{
-		return "comment";
+		return EntityType.comment;
 	}
 
 	@Override

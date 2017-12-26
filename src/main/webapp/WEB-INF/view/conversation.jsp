@@ -54,7 +54,7 @@
                             &nbsp;
                             <div class="sep5"></div>
                             <div class="payload">
-                                    ${message.content}
+                                    ${my:linkConvert(path,message.content )}
                             </div>
                         </td>
                     </tr>

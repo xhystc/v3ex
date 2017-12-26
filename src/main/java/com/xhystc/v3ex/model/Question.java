@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Objects;
 
 public class Question implements Serializable,Votable,Commentable
 {
@@ -122,9 +123,9 @@ public class Question implements Serializable,Votable,Commentable
 	}
 
 	@Override
-	public String type()
+	public EntityType type()
 	{
-		return "question";
+		return EntityType.question;
 	}
 
 	@Override
@@ -145,6 +146,33 @@ public class Question implements Serializable,Votable,Commentable
 		this.commentInform = commentInform;
 	}
 
+	@Override
+	public boolean equals(Object o)
+	{
+		if (this == o)
+		{
+			return true;
+		}
+		if (!(o instanceof Question))
+		{
+			return false;
+		}
+		Question question = (Question) o;
+		if(this.getId()!=null && ((Question) o).getId()!=null){
+			return this.getId().equals(((Question) o).getId());
+		}
+		return Objects.equals(getUser(), question.getUser()) &&
+				Objects.equals(getTag(), question.getTag()) &&
+				Objects.equals(getTitle(), question.getTitle()) &&
+				Objects.equals(getContent(),((Question) o).getContent()) &&
+				Objects.equals(getCreateDate(), question.getCreateDate());
+	}
+
+	@Override
+	public int hashCode()
+	{
+		return Objects.hash(getUser(), getTag(), getTitle(), getCreateDate());
+	}
 }
 
 

@@ -2,6 +2,7 @@ package com.xhystc.v3ex.commons;
 
 import com.xhystc.v3ex.model.User;
 import com.xhystc.v3ex.model.vo.json.Problem;
+import com.xhystc.v3ex.service.UserService;
 import com.youbenzi.mdtool.tool.MDTool;
 import org.apache.shiro.SecurityUtils;
 import org.jsoup.nodes.Document;
@@ -14,14 +15,20 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 import org.springframework.web.util.HtmlUtils;
 
-import javax.servlet.http.HttpSession;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
-public class FormUtils
+public class CommonUtils
 {
+
+	public static final String LINK_DIVIDE = ",";
+	public static final String LINK_BEGIN = "#!(";
+	public static final char LINK_END = ')';
+	public static final String LINK_TEMPLATE = "#!(%s,%s)";
+
+	public static final char AT_BEGIN = '@';
 
 	public static User getCurrentUser(){
 		return (User) SecurityUtils.getSubject().getSession().getAttribute("currentUser");
@@ -56,7 +63,6 @@ public class FormUtils
 					s = s.trim();
 					if(markdown ==null ){
 						setMethod.invoke(o,HtmlUtils.htmlEscape(s));
-
 					}else {
 						s = s.replace("\n","<br/>");
 						s = MDTool.markdown2Html(s);
@@ -77,7 +83,7 @@ public class FormUtils
 						setMethod.invoke(o,doc.getElementsByTag("body").html());
 
 					}
-
+					setMethod.invoke(o,s.replace("#!(","#！("));
 				}
 
 			}
@@ -123,9 +129,59 @@ public class FormUtils
 		return ret;
 	}
 
+	public static String wrapLinkHtml(String url,String content){
+		String t = "<a href= %s>%s</a>";
+		return String.format(t,url,content);
+	}
+
+	public static String AtEscape(String content, UserService userService){
+		StringBuilder sb = new StringBuilder();
+		int ptr = 0;
+		while (ptr < content.length()){
+			int index = content.indexOf(AT_BEGIN,ptr);
+
+			if(index<0){
+				sb.append(content.substring(ptr));
+				break;
+			}
+			sb.append(content.substring(ptr,index));
+			int nextIndex = nextIndex(content,index+1);
+			String username = content.substring(index+1,nextIndex);
+			User user  = userService.getUserByName(username);
+			if(user!=null){
+				String s = String.format(LINK_TEMPLATE,"/user/"+user.getId(),"@"+user.getName());
+				sb.append(s);
+				ptr = nextIndex;
+			}else {
+				sb.append(content.substring(index,nextIndex));
+				ptr = nextIndex;
+			}
+		}
+		return sb.toString();
+	}
+
+
+	public static int nextIndex(String content,int pos,char end){
+		for(int i = pos;i<content.length();i++){
+			if(content.charAt(i) == end){
+				return i;
+			}
+		}
+		return content.length();
+	}
+
+	public static int nextIndex(String content,int pos){
+		for(int i = pos;i<content.length();i++){
+			if(Character.isWhitespace(content.charAt(i))){
+				return i;
+			}
+		}
+		return content.length();
+	}
+
 	public static boolean handleErrors(Model model,Errors errors){
 		if(errors.hasErrors()){
-			Set<Problem> problems = FormUtils.getProblems(errors);
+			Set<Problem> problems = CommonUtils.getProblems(errors);
 			model.addAttribute("problems",problems);
 			return true;
 		}

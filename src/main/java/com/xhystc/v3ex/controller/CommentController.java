@@ -1,6 +1,6 @@
 package com.xhystc.v3ex.controller;
 
-import com.xhystc.v3ex.commons.FormUtils;
+import com.xhystc.v3ex.commons.CommonUtils;
 import com.xhystc.v3ex.model.Comment;
 import com.xhystc.v3ex.model.CommentInform;
 import com.xhystc.v3ex.model.Question;
@@ -10,7 +10,6 @@ import com.xhystc.v3ex.model.vo.page.CommentPage;
 import com.xhystc.v3ex.service.*;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,7 +18,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.Date;
 import java.util.List;
@@ -35,14 +33,20 @@ public class CommentController
 	private CommentService commentService;
 	private QuestionService questionService;
 	private VoteService voteService;
+	private HotTopicService hotTopicService;
+	private UserService userService;
 
 	@Autowired
-	public CommentController(CommentService commentService, @Qualifier("redisCacheQuestionServiceImpl") QuestionService questionService
-			, VoteService voteService)
+	public CommentController(CommentService commentService, QuestionService questionService,
+	                         HotTopicService hotTopicService,
+	                         VoteService voteService,
+	                         UserService userService)
 	{
 		this.commentService = commentService;
 		this.questionService = questionService;
 		this.voteService = voteService;
+		this.hotTopicService = hotTopicService;
+		this.userService = userService;
 	}
 
 	@RequestMapping("/q/{questionId}")
@@ -50,7 +54,7 @@ public class CommentController
 	                              @RequestParam(defaultValue = "1") int page){
 
 		CommentPage commentPage = new CommentPage();
-		Question question = questionService.getQuestion(questionId);
+		Question question = questionService.getQuestionById(questionId);
 		commentPage.setQuestion(question);
 
 		List<Comment> comments= commentService.getQuestionComments(questionId,page,pageSize);
@@ -61,7 +65,7 @@ public class CommentController
 		CommentInform commentInform = commentService.commentInform(question.type(),questionId);
 		int lastPage = commentInform.getCommentCount()/pageSize+(commentInform.getCommentCount()%pageSize>0?1:0);
 
-		User user = FormUtils.getCurrentUser();
+		User user = CommonUtils.getCurrentUser();
 		Long userId = user==null?null:user.getId();
 
 		voteService.fetchUserVote(userId,commentPage.getQuestion());
@@ -72,32 +76,35 @@ public class CommentController
 		question.setCommentInform(commentInform);
 
 		model.addAttribute("commentPage",commentPage);
-		model.addAttribute("pageButtons",FormUtils.pageButtons(page,lastPage));
+		model.addAttribute("pageButtons", CommonUtils.pageButtons(page,lastPage));
 		model.addAttribute("currentPage",page);
 		model.addAttribute("lastPage",lastPage);
+		model.addAttribute("hotQuestion",hotTopicService.getHotTopics());
 
 		return "question_comment";
 	}
 
 	@RequestMapping(value = "/publish_comment",params = {"questionId"})
-	public String publishQuestionComment(@Valid QuestionCommentForm form, Model model, HttpSession session, Errors errors){
+	public String publishQuestionComment(@Valid QuestionCommentForm form, Model model, Errors errors){
 		logger.debug("get do_comment request");
 
-		if(FormUtils.handleErrors(model,errors))
+		if(CommonUtils.handleErrors(model,errors))
 		{
 			return "/q/"+form.getQuestionId();
 		}
-		FormUtils.escapeFormModle(form);
 
+		form.setContent(CommonUtils.AtEscape(form.getContent(),userService));
+		CommonUtils.escapeFormModle(form);
 
 		Comment comment = new Comment();
 		comment.setContent(form.getContent());
-		comment.setQuestion(questionService.getQuestion(form.getQuestionId()));
-		comment.setUser(FormUtils.getCurrentUser());
+		comment.setQuestion(questionService.getQuestionById(form.getQuestionId()));
+		comment.setUser(CommonUtils.getCurrentUser());
 		comment.setSendDate(new Date());
 
+
 		commentService.doComment(comment);
-		questionService.upQuestion(questionService.getQuestion(form.getQuestionId()));
+		questionService.upQuestion(questionService.getQuestionById(form.getQuestionId()));
 
 		return "redirect:/q/"+form.getQuestionId();
 	}

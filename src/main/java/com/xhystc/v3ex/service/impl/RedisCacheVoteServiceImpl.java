@@ -4,13 +4,13 @@ import com.xhystc.v3ex.commons.RedisUtils;
 
 import com.xhystc.v3ex.dao.VoteDao;
 import com.xhystc.v3ex.model.*;
-import com.xhystc.v3ex.model.vo.query.VoteInformQueryCondition;
 import com.xhystc.v3ex.model.vo.query.VoteQueryCondition;
 import com.xhystc.v3ex.service.VoteService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import redis.clients.jedis.Jedis;
@@ -24,20 +24,18 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
-
-@Transactional(rollbackFor = RuntimeException.class)
 @Component
 public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,Runnable,InitializingBean
 {
 	static final private Logger logger = Logger.getLogger(RedisCacheVoteServiceImpl.class);
 	static final private String ACTIVE_PREFIX = "vote-active-";
 	static final private String INFORM_PREFIX = "vote-inform-";
-	static final private String USER_PREFIX = "vote-userVotes-";
 
-
-	private String[] votableList = {"question","comment"};
+	private EntityType[] votableList = {EntityType.question,EntityType.comment};
 	private VoteDao voteDao;
 	private JedisPool jedisPool;
+
+	@Value("#{configProperties['vote.active.timeout']}")
 	private long timeout = 1000*60*3;
 
 
@@ -51,22 +49,35 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 
 	@Transactional(rollbackFor = RuntimeException.class)
 	@Override
-	public boolean doVote(Long userId, String type, Long id)
+	public boolean doVote(Long userId, EntityType type, Long id)
 	{
 		try (Jedis redis = jedisPool.getResource())
 		{
-			return addUserVotes(redis, userId, type, id) && incVote(redis, userId, type, id, 1);
+			RedisUtils.active(redis, activeKey(type), id.toString());
+			String informKey = informKey(type, id);
+			return redis.sadd(informKey,userId.toString())!=null;
 		}
 
 	}
 
 	@Transactional(rollbackFor = RuntimeException.class)
 	@Override
-	public boolean disVote(Long userId, String type, Long id)
+	public boolean disVote(Long userId, EntityType type, Long id)
 	{
 		try (Jedis redis = jedisPool.getResource())
 		{
-			return delUserVotes(redis, userId, type, id) && incVote(redis, userId, type, id, -1);
+			RedisUtils.active(redis, activeKey(type), id.toString());
+			String informKey = informKey(type, id);
+			Long res = redis.srem(informKey, userId.toString());
+			if(res !=null && res >0){
+				return true;
+			}else {
+				if(voteDao.deleteVote(new Vote(userId, type, id))>0){
+					voteDao.incVoteCount(type,id,-1);
+					return true;
+				}
+				return false;
+			}
 		}
 	}
 
@@ -76,10 +87,8 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 	{
 		try (Jedis redis = jedisPool.getResource())
 		{
-			VoteInform voteInform = getVoteInform(redis, votable.type(),votable.id());
-			if (voteInform != null){
-				votable.setVoteCount(voteInform.getVoteCount());
-			}
+			Long count = redis.scard(informKey(votable.type(),votable.id()));
+			votable.setVoteCount(votable.getVoteCount()+(count==null?0:count.intValue()));
 			if (userId != null && userId > 0)
 			{
 				votable.setIsVoted(getIsVote(redis,userId,votable.type(),votable.id()));
@@ -92,7 +101,7 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 	{
 		try (Jedis redis = jedisPool.getResource())
 		{
-			fetchVoteInforms(redis,votables);
+			fetchVoteCount(redis,votables);
 			if(userId != null && userId>0){
 				fetchIsVotes(redis,userId,votables);
 			}
@@ -100,7 +109,7 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 	}
 
 	@Override
-	public boolean isVote(Long userId,String type,Long id){
+	public boolean isVote(Long userId,EntityType type,Long id){
 		try (Jedis redis = jedisPool.getResource())
 		{
 			return getIsVote(redis, userId,type,id);
@@ -108,40 +117,31 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 	}
 
 	@Override
-	public VoteInform voteInform(String type,Long id){
+	public int voteCount(EntityType type,Long id){
 		try (Jedis redis = jedisPool.getResource())
 		{
-			return getVoteInform(redis,type,id);
+			String key  = informKey(type,id);
+			Long count = redis.scard(key);
+			return voteDao.getVoteCount(type,id)+(count==null?0:count.intValue());
 		}
 	}
 
+	@Transactional(rollbackFor = RuntimeException.class)
 	@Override
 	public void run()
 	{
 		logger.debug("vote time out");
 		try(Jedis redis = jedisPool.getResource())
 		{
-			Set<Long> timeoutUser = getTimeoutIds(redis,"user",timeout);
-			for (Long id : timeoutUser){
-				logger.debug("time out user:"+id);
-			}
-			for(String type : votableList){
-				dealUserTimeout(redis,timeoutUser,type);
-			}
-			for(String type : votableList){
+			for(EntityType type : votableList){
 				Set<Long> ids = getTimeoutIds(redis,type,timeout);
-				for (Long id : timeoutUser){
-					logger.debug("time out votable:"+id+" type:"+type);
-				}
 				dealVotableTimeout(redis,ids,type);
 			}
-
-
 		}
 	}
 
 	@Override
-	public void afterPropertiesSet() throws Exception
+	public void afterPropertiesSet()
 	{
 		logger.debug("vote service do init");
 		ScheduledExecutorService service = Executors.newScheduledThreadPool(1, r -> {
@@ -153,7 +153,7 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 		service.scheduleWithFixedDelay(this,timeout,timeout, TimeUnit.MILLISECONDS);
 	}
 
-	private Set<Long> getTimeoutIds(Jedis redis,String type,long timeout){
+	private Set<Long> getTimeoutIds(Jedis redis,EntityType type,long timeout){
 		String activeKey;
 		activeKey = activeKey(type);
 		long curr = System.currentTimeMillis();
@@ -169,18 +169,25 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 	}
 
 
-	private void dealVotableTimeout(Jedis redis,Set<Long> ids,String type){
-		Map<Long,Response<Map<String,String>>> resposeMap = new HashMap<>(ids.size());
+	private void dealVotableTimeout(Jedis redis,Set<Long> ids,EntityType type){
+		Map<Long,Response<Set<String>>> responseMap = new HashMap<>(ids.size());
 		Pipeline pipeline = redis.pipelined();
 		for(Long id : ids){
-			resposeMap.put(id,pipeline.hgetAll(informKey(type,id)));
+			responseMap.put(id,pipeline.smembers(informKey(type,id)));
 		}
 		pipeline.sync();
 
 		for(Long id : ids){
-			Map<String,String> informMap = resposeMap.get(id).get();
-			VoteInform voteInform = mapToInform(informMap,type,id);
-			voteDao.updateVoteCount(type,id,voteInform.getVoteCount());
+			Set<String> userSet = responseMap.get(id).get();
+			voteDao.incVoteCount(type,id,userSet.size());
+
+
+			for(String s : userSet){
+				pipeline.srem(informKey(type,id),s);
+				Long userId = Long.parseLong(s);
+				voteDao.insertVote(new Vote(userId,type,id));
+			}
+			pipeline.sync();
 			if(!RedisUtils.isActive(redis,activeKey(type),id.toString())){
 				redis.del(informKey(type,id));
 			}
@@ -188,62 +195,27 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 
 	}
 
-	private void dealUserTimeout(Jedis redis,Set<Long> ids,String type){
-		Map<Long,Response<Set<String>>> resposeMap = new HashMap<>(ids.size());
+
+	private void fetchRedisUserVotesSet(Jedis redis, Set<Long> ids, Long userId, EntityType type,Set<Long> include)
+	{
+		Map<Long,Response<Boolean>> responseMap = new HashMap<>(include.size());
 		Pipeline pipeline = redis.pipelined();
-		for(Long id : ids){
-			resposeMap.put(id,pipeline.smembers(userkey(id,type)));
+		for(Long id : include){
+			String informKey = informKey(type,id);
+			responseMap.put(id,pipeline.sismember(informKey,userId.toString()));
 		}
 		pipeline.sync();
-		for(Long id : ids){
-			Set<String> targetIds = resposeMap.get(id).get();
-			for(String s : targetIds){
-				try
-				{
-					Vote vote = new Vote(id,type,Long.parseLong(s));
-					voteDao.insertVote(vote);
-				}catch (Exception e){
-					logger.info(e.getMessage());
-				}
-			}
-			RedisUtils.removeFromSet(redis,userkey(id,type),targetIds);
-		}
-	}
-
-
-	private void fetchRedisUserVotesSet(Jedis redis, Set<Long> ids, Long userId, String type,Set<Long> include)
-	{
-		String key = userkey(userId, type);
-		Set<String> set = redis.smembers(key);
-		if (set == null)
-		{
-			return;
-		}
-		for (String s : set)
-		{
-			Long id = Long.parseLong(s);
-			if(include.contains(id))
-			{
-				ids.add(id);
+		for(Map.Entry<Long,Response<Boolean>> en : responseMap.entrySet()){
+			if(en.getValue().get()){
+				ids.add(en.getKey());
 			}
 		}
 	}
 
-	private boolean getIsVote(Jedis redis, Long userId, String type, Long id)
+	private boolean getIsVote(Jedis redis, Long userId, EntityType type, Long id)
 	{
-		String key = userkey(userId, type);
-		boolean ret = redis.sismember(key,id.toString());
-		if (ret)
-		{
-			return true;
-		}
-		VoteQueryCondition condition = new VoteQueryCondition();
-		condition.setParentId(id);
-		condition.setParentType(type);
-		condition.setUserId(userId);
-		List<Vote> votes = voteDao.selectVotes(condition);
-
-		return votes != null && votes.size() > 0;
+		String key = informKey(type, id);
+		return redis.sismember(key, userId.toString()) || voteDao.getVote(userId, type, id) != null;
 	}
 
 	private void fetchIsVotes(Jedis redis, Long userId, List<? extends Votable> votables)
@@ -252,7 +224,7 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 		{
 			return;
 		}
-		String type = votables.get(0).type();
+		EntityType type = votables.get(0).type();
 		Set<Long> voteIds = null;
 		if (userId != null && userId > 0)
 		{
@@ -280,165 +252,36 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 		}
 	}
 
-	private VoteInform getVoteInform(Jedis redis, String type,Long id)
-	{
-		String informKey = informKey(type, id);
-		Map<String, String> informMap = redis.hgetAll(informKey);
-		VoteInform voteInform;
-		if (informMap != null && informMap.size()>0)
-		{
-			voteInform = mapToInform(informMap,type,id);
-			return voteInform;
-		}
-		return null;
-	}
 
-	private void fetchVoteInforms(Jedis redis, List<? extends Votable> votables)
+	private void fetchVoteCount(Jedis redis, List<? extends Votable> votables)
 	{
-		List<Response<Map<String, String>>> responses = new ArrayList<>(votables.size());
+		List<Response<Long>> responses = new ArrayList<>(votables.size());
 
 		Pipeline pipeline = redis.pipelined();
 		for (Votable votable : votables)
 		{
-			responses.add(pipeline.hgetAll(informKey(votable.type(), votable.id())));
+			responses.add(pipeline.scard(informKey(votable.type(),votable.id())));
 		}
 		pipeline.sync();
 
 		for (int i = 0; i < responses.size(); i++)
 		{
-			Map<String, String> informMap = responses.get(i).get();
 			Votable votable = votables.get(i);
-			if (informMap != null && informMap.size() > 0)
-			{
-				votable.setVoteCount(mapToInform(informMap,votable.type(),votable.id()).getVoteCount());
-			}
-		}
-
-	}
-
-	private boolean incVote(Jedis redis, Long userId, String type, Long id, int i)
-	{
-		if(needCache(type,id) || redis.exists(informKey(type,id))){
-			return storeVoteInform(redis,userId,type,id,i);
-		}else {
-			return voteDao.incVoteCount(type,id,i)>0;
+			Long count = responses.get(i).get();
+			votable.setVoteCount(votable.getVoteCount()+(count==null?0:count.intValue()));
 		}
 
 	}
 
 
-	private boolean storeVoteInform(Jedis redis, Long userId,String type,Long id, int i)
+	private static String activeKey(EntityType type)
 	{
-
-		RedisUtils.active(redis, activeKey(type), id.toString());
-		String informKey = informKey(type, id);
-		if (!redis.exists(informKey))
-		{
-			VoteInform voteInform;
-			voteInform = new VoteInform();
-			voteInform.setVoteCount(i);
-			voteInform.setLastVoteTime(new Date());
-			voteInform.setVid(id);
-			voteInform.setType(type);
-			voteInform.setLastVoteUser(userId);
-			if(voteDao.incVoteCount(type,id,i)<=0){
-				return false;
-			}
-			int voteCount = voteDao.getVoteCount(type,id);
-			voteInform.setVoteCount(voteCount);
-			return redis.hmset(informKey, informToMap(voteInform)) != null;
-
-		} else
-		{
-			Pipeline pipeline = redis.pipelined();
-			if (i > 0)
-			{
-				DateFormat format = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-				pipeline.hset(informKey, "lastVoteUser", userId.toString());
-				pipeline.hset(informKey, "lastVoteDate", format.format(new Date()));
-			}
-			Response<Long> response = pipeline.hincrBy(informKey, "voteCount", i);
-			pipeline.sync();
-			return response.get()!=null;
-		}
-
+		return ACTIVE_PREFIX + type.toString();
 	}
 
-	private boolean addUserVotes(Jedis redis, Long userId, String type, Long id)
-	{
-		if(needCache(userId)){
-			RedisUtils.active(redis, activeKey("user"), userId.toString());
-			return redis.sadd(userkey(userId, type), id.toString())>0;
-		}else {
-			Vote vote = new Vote(userId,type,id);
-			return voteDao.insertVote(vote)>0;
-		}
-	}
-
-	private boolean delUserVotes(Jedis redis, Long userId, String type, Long id)
-	{
-		Long l = redis.srem(userkey(userId, type), id.toString());
-		if (l == null || l <= 0)
-		{
-			Vote vote = new Vote(userId, type, id);
-			return voteDao.deleteVote(vote)>0;
-		}
-		return true;
-	}
-
-
-	private static String activeKey(String type)
-	{
-		return ACTIVE_PREFIX + type;
-	}
-
-	private static String informKey(String type, Long id)
+	private static String informKey(EntityType type, Long id)
 	{
 		return INFORM_PREFIX + type + "-" + id.toString();
-	}
-
-	private static String userkey(Long userId, String type)
-	{
-		return USER_PREFIX + type + "-" + userId.toString();
-	}
-
-	private static VoteInform mapToInform(Map<String, String> informMap,String type,Long id)
-	{
-		VoteInform voteInform = new VoteInform();
-		String userIdStr =  informMap.get("lastVoteUser");
-		Long userId = StringUtils.isBlank(userIdStr)?0:Long.parseLong(informMap.get("lastVoteUser"));
-		int votes = Integer.parseInt(informMap.get("voteCount"));
-		String s = informMap.get("lastVoteTime");
-		DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		Date date = null;
-		if( !StringUtils.isBlank(s)){
-			try
-			{
-				date = format.parse(s);
-			} catch (ParseException e)
-			{
-				date = null;
-			}
-		}
-		voteInform.setLastVoteUser(userId);
-		voteInform.setVoteCount(votes);
-		voteInform.setLastVoteTime(date);
-		voteInform.setVid(id);
-		voteInform.setType(type);
-
-		return voteInform;
-	}
-
-	private static Map<String, String> informToMap(VoteInform voteInform)
-	{
-		Map<String, String> informMap = new HashMap<>(3);
-
-		DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-		informMap.put("voteCount", voteInform.getVoteCount() + "");
-		informMap.put("lastVoteUser", voteInform.getLastVoteUser()==null?"":voteInform.getLastVoteUser().toString());
-		informMap.put("lastVoteDate", voteInform.getLastVoteTime()==null?"":format.format(voteInform.getLastVoteTime()));
-		return informMap;
 	}
 
 
@@ -460,12 +303,12 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 		this.timeout = timeout;
 	}
 
-	public String[] getVotableList()
+	public EntityType[] getVotableList()
 	{
 		return votableList;
 	}
 
-	public void setVotableList(String[] votableList)
+	public void setVotableList(EntityType[] votableList)
 	{
 		this.votableList = votableList;
 	}

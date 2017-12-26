@@ -1,6 +1,6 @@
 package com.xhystc.v3ex.controller;
 
-import com.xhystc.v3ex.commons.FormUtils;
+import com.xhystc.v3ex.commons.CommonUtils;
 import com.xhystc.v3ex.model.Conversation;
 import com.xhystc.v3ex.model.Message;
 import com.xhystc.v3ex.model.User;
@@ -37,13 +37,13 @@ public class MessageController
 
 	@RequestMapping("/message")
 	public String message(Model model){
-		List<Conversation> conversations = messageService.getConversations(FormUtils.getCurrentUser().getId());
+		List<Conversation> conversations = messageService.getConversations(CommonUtils.getCurrentUser().getId());
 		model.addAttribute("conversations",conversations);
 		return "message";
 	}
 	@RequestMapping(value = "/conversation",params = {"conversationId"})
 	public String conversation(Model model,String conversationId){
-		User user = FormUtils.getCurrentUser();
+		User user = CommonUtils.getCurrentUser();
 		List<Message> messages = messageService.getMessages(user.getId(),conversationId);
 		model.addAttribute("messages",messages);
 		String[] ids = conversationId.split("_");
@@ -58,7 +58,7 @@ public class MessageController
 
 	@RequestMapping(value = "/publish_message",method = RequestMethod.POST)
 	public String publishMessage(@Valid MessageForm form,Model model ,Errors errors){
-		if(FormUtils.handleErrors(model,errors)){
+		if(CommonUtils.handleErrors(model,errors)){
 			return message(model);
 		}
 		List<Problem> problems = new ArrayList<>(3);
@@ -74,7 +74,7 @@ public class MessageController
 		if(to == null){
 			to = userService.getUserByName(form.getTo());
 		}
-		User from = FormUtils.getCurrentUser();
+		User from = CommonUtils.getCurrentUser();
 		if(to==null){
 			problems.add(new Problem(null,null,"用户不存在"));
 		}
@@ -85,6 +85,8 @@ public class MessageController
 			model.addAttribute("problems",problems);
 			return message(model);
 		}
+		CommonUtils.escapeFormModle(form);
+		form.setContent(CommonUtils.AtEscape(form.getContent(),userService));
 		messageService.publishMessage(from,to,form.getContent());
 		return "redirect:/conversation?conversationId="+Conversation.conversationKey(to.getId(),from.getId());
 	}

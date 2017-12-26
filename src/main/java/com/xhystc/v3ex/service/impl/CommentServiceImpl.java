@@ -38,7 +38,7 @@ public class CommentServiceImpl implements CommentService
 	{
 		commentDao.insertComment(comment);
 		System.out.println(comment.getId());
-		String commentInformId = CommentInform.commentInformId("question",comment.getQuestion().getId());
+		String commentInformId = CommentInform.commentInformId(EntityType.question.toString(),comment.getQuestion().getId());
 		CommentInform commentInform = new CommentInform();
 		commentInform.setId(commentInformId);
 		commentInform.setLastCommentTime(new Date());
@@ -66,12 +66,12 @@ public class CommentServiceImpl implements CommentService
 	}
 
 	@Override
-	public CommentInform commentInform(String type, Long id)
+	public CommentInform commentInform(EntityType type, Long id)
 	{
-		CommentInform commentInform = commentInformDao.getCommentInformById(CommentInform.commentInformId(type,id));
+		CommentInform commentInform = commentInformDao.getCommentInformById(CommentInform.commentInformId(type.toString(),id));
 		if (commentInform==null){
 			commentInform = new CommentInform();
-			commentInform.setId(CommentInform.commentInformId(type,id));
+			commentInform.setId(CommentInform.commentInformId(type.toString(),id));
 		}
 		return commentInform;
 	}
@@ -79,10 +79,10 @@ public class CommentServiceImpl implements CommentService
 	@Override
 	public void fetchComment(Commentable commentable)
 	{
-		CommentInform commentInform  = commentInformDao.getCommentInformById(CommentInform.commentInformId(commentable.type(),commentable.id()));
+		CommentInform commentInform  = commentInformDao.getCommentInformById(CommentInform.commentInformId(commentable.type().toString(),commentable.id()));
 		if (commentInform == null){
 			commentInform = new CommentInform();
-			commentInform.setId(CommentInform.commentInformId(commentable.type(),commentable.id()));
+			commentInform.setId(CommentInform.commentInformId(commentable.type().toString(),commentable.id()));
 		}
 		commentable.setCommentInform(commentInform);
 	}
@@ -93,7 +93,7 @@ public class CommentServiceImpl implements CommentService
 		CommentInformQueryCondition condition = new CommentInformQueryCondition();
 		condition.setInclude(new HashSet<>());
 		for(Commentable commentable : commentables){
-			condition.getInclude().add(CommentInform.commentInformId(commentable.type(),commentable.id()));
+			condition.getInclude().add(CommentInform.commentInformId(commentable.type().toString(),commentable.id()));
 		}
 		List<CommentInform> commentInforms = commentInformDao.selectCommentInform(condition);
 		for(Commentable commentable : commentables){
@@ -103,7 +103,7 @@ public class CommentServiceImpl implements CommentService
 				Iterator<CommentInform> iterator = commentInforms.iterator();
 				while (iterator.hasNext()){
 					CommentInform commentInform = iterator.next();
-					String id = VoteInform.voteInformId(commentable.type(),commentable.id());
+					String id = VoteInform.voteInformId(commentable.type().toString(),commentable.id());
 					if(commentInform.getId().equals(id)){
 						commentable.setCommentInform(commentInform);
 						iterator.remove();
@@ -113,11 +113,17 @@ public class CommentServiceImpl implements CommentService
 				}
 				if (!find){
 					CommentInform commentInform = new CommentInform();
-					commentInform.setId(CommentInform.commentInformId(commentable.type(),commentable.id()));
+					commentInform.setId(CommentInform.commentInformId(commentable.type().toString(),commentable.id()));
 					commentable.setCommentInform(commentInform);
 				}
 			}
 		}
+	}
+
+	@Override
+	public Comment getCommentById(Long id)
+	{
+		return id==null?null:commentDao.getCommentById(id);
 	}
 
 }

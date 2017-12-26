@@ -1,14 +1,12 @@
 package com.xhystc.v3ex.shiro;
 
-import com.xhystc.v3ex.commons.FormUtils;
+import com.xhystc.v3ex.commons.CommonUtils;
 import com.xhystc.v3ex.service.UserService;
 import org.apache.log4j.Logger;
-import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.ExcessiveAttemptsException;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
-import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -51,7 +49,7 @@ public class RetryLimitHashedCredentialsMatcher  extends HashedCredentialsMatche
 		boolean matches = super.doCredentialsMatch(token, info);
 		if(matches) {
 			redis.delete(usernameKey);
-			FormUtils.setCurrentUser(userService.getUserByName(username));
+			CommonUtils.setCurrentUser(userService.getUserByName(username));
 		}else {
 			redis.opsForValue().set(usernameKey,retryCount,interval, TimeUnit.SECONDS);
 		}

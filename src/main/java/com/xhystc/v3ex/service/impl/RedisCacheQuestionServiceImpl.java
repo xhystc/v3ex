@@ -11,6 +11,7 @@ import com.xhystc.v3ex.service.QuestionService;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import redis.clients.jedis.*;
@@ -29,7 +30,10 @@ public class RedisCacheQuestionServiceImpl implements QuestionService,Initializi
 	static final private String ACTIVE_PREFIX = "question-active";
 	static final private int FETCH_SIZE = 5000;
 
+	@Value("#{configProperties['question.active.timeout']}")
 	private long timeout = 60*1000*3;
+
+	@Value("#{configProperties['question.active.size']}")
 	private int activeSize = 100000;
 
 	private JedisPool jedisPool;
@@ -48,7 +52,7 @@ public class RedisCacheQuestionServiceImpl implements QuestionService,Initializi
 
 
 	@Override
-	public Question getQuestion(Long id)
+	public Question getQuestionById(Long id)
 	{
 		return questionDao.getQuestionById(id);
 	}

@@ -61,7 +61,7 @@
                         <a href="${path}/conversation?conversationId=${conversation.id}" onclick="deleteNotification(6865239, 49048)" class="node">查看</a>
                         <div class="sep5"></div>
                         <div class="payload">
-                                ${conversation.lastMessage.content}
+                                ${my:linkConvert(path,conversation.lastMessage.content)}
                         </div>
                     </td>
                 </tr>

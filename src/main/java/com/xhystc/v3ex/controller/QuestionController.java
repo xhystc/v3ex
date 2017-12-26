@@ -1,20 +1,18 @@
 package com.xhystc.v3ex.controller;
 
-import com.xhystc.v3ex.commons.FormUtils;
+import com.xhystc.v3ex.commons.CommonUtils;
 import com.xhystc.v3ex.model.Question;
 import com.xhystc.v3ex.model.User;
 import com.xhystc.v3ex.model.vo.form.QuestionForm;
 import com.xhystc.v3ex.service.*;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
 import javax.validation.Valid;
@@ -34,20 +32,26 @@ public class QuestionController
 	private QuestionService questionService;
 	private CommentService commentService;
 	private MessageService messageService;
+	private HotTopicService hotTopicService;
+	private UserService userService;
 
 
 	@Autowired
 	public QuestionController(VoteService voteService,
 	                          TagService tagService,
-	                          @Qualifier("redisCacheQuestionServiceImpl") QuestionService questionService,
+	                          QuestionService questionService,
 	                          CommentService commentService,
-	                          MessageService messageService)
+	                          MessageService messageService,
+	                          HotTopicService hotTopicService,
+	                          UserService userService)
 	{
 		this.voteService = voteService;
 		this.tagService = tagService;
 		this.questionService = questionService;
 		this.commentService = commentService;
 		this.messageService = messageService;
+		this.hotTopicService = hotTopicService;
+		this.userService = userService;
 	}
 
 
@@ -60,10 +64,11 @@ public class QuestionController
 		model.addAttribute("currentTag",tagId);
 		int total = questionService.total(tagId);
 		int lastPage =total/pageSize+(total%pageSize>0?1:0);
-		model.addAttribute("pageButtons",FormUtils.pageButtons(page,lastPage));
+		model.addAttribute("pageButtons", CommonUtils.pageButtons(page,lastPage));
 		model.addAttribute("currentPage",page);
 		model.addAttribute("lastPage",lastPage);
-		User currentUser = FormUtils.getCurrentUser();
+		model.addAttribute("hotQuestions",hotTopicService.getHotTopics());
+		User currentUser = CommonUtils.getCurrentUser();
 		if(currentUser!=null){
 			model.addAttribute("unread",messageService.unread(currentUser.getId()));
 		}
@@ -80,14 +85,15 @@ public class QuestionController
 	@RequestMapping("/publish_question")
 	public String publish(@Valid QuestionForm form, Errors errors, Model m){
 
-		if(FormUtils.handleErrors(m,errors)){
+		if(CommonUtils.handleErrors(m,errors)){
 			return editQuestion(m);
 		}
+		form.setContent(CommonUtils.AtEscape(form.getContent(),userService));
+		CommonUtils.escapeFormModle(form);
 
-		FormUtils.escapeFormModle(form);
-		User user = FormUtils.getCurrentUser();
+		User user = CommonUtils.getCurrentUser();
 
-		Long questionId = questionService.publishQuetion(user,form);
+		questionService.publishQuetion(user,form);
 		return "redirect:/index";
 	}
 
@@ -99,7 +105,7 @@ public class QuestionController
 
 	private List<Question> doQuestions(int page,Long tagId,Model model){
 		List<Question> questions = questionService.getQuestions(tagId,page,pageSize);
-		Long userId = FormUtils.getCurrentUser()==null? null : FormUtils.getCurrentUser().getId();
+		Long userId = CommonUtils.getCurrentUser()==null? null : CommonUtils.getCurrentUser().getId();
 		voteService.fetchUserVotes(userId,questions);
 		commentService.fetchComments(questions);
 

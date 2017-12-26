@@ -51,7 +51,9 @@
         SELECT * FROM vote WHERE user_id = #{_parameter};
     </select>
 
-
+    <select id="getVote" resultMap="com.xhystc.v3ex.dao.VoteDao.voteResultMap">
+        SELECT * FROM vote WHERE user_id = #{arg0} and parent_type = #{arg1} and parent_id = #{arg2};
+    </select>
 
 </mapper>
 

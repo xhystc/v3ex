@@ -1,13 +1,12 @@
 package com.xhystc.v3ex.controller;
 
-import com.xhystc.v3ex.commons.FormUtils;
-import com.xhystc.v3ex.model.Comment;
-import com.xhystc.v3ex.model.Question;
-import com.xhystc.v3ex.model.User;
-import com.xhystc.v3ex.model.Vote;
+import com.xhystc.v3ex.async.Event;
+import com.xhystc.v3ex.async.EventManager;
+import com.xhystc.v3ex.async.EventType;
+import com.xhystc.v3ex.commons.CommonUtils;
+import com.xhystc.v3ex.model.*;
 import com.xhystc.v3ex.model.vo.json.GeneralResultBean;
-import com.xhystc.v3ex.service.CommentService;
-import com.xhystc.v3ex.service.QuestionService;
+import com.xhystc.v3ex.service.HotTopicService;
 import com.xhystc.v3ex.service.VoteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -19,15 +18,15 @@ public class VoteController
 {
 
 	private VoteService voteService;
-	private QuestionService questionService;
-	private CommentService commentService;
+	private HotTopicService hotTopicService;
+	private EventManager eventManager;
 
 	@Autowired
-	public VoteController(VoteService voteService,QuestionService questionService,CommentService commentService)
+	public VoteController(VoteService voteService,HotTopicService hotTopicService,EventManager eventManager)
 	{
 		this.voteService = voteService;
-		this.questionService = questionService;
-		this.commentService = commentService;
+		this.hotTopicService = hotTopicService;
+		this.eventManager = eventManager;
 	}
 
 	@RequestMapping(value = "/vote/service/do_vote",headers = {"Accept=application/json"},params = {"questionId"})
@@ -41,23 +40,21 @@ public class VoteController
 	}
 
 	private GeneralResultBean doVote(String type,Long id){
-		User user = FormUtils.getCurrentUser();
+		User user = CommonUtils.getCurrentUser();
 		if(user==null)
 		{
 			return new GeneralResultBean(0,"请先登录");
 		}
-		Vote vote = new Vote(user.getId(),type,id);
-		if(voteService.isVote(user.getId(),type,id)){
-			voteService.disVote(user.getId(),type,id);
-			return new GeneralResultBean(-1,""+voteService.voteInform(type,id).getVoteCount());
+		if(voteService.isVote(user.getId(), EntityType.valueOf(type),id)){
+			voteService.disVote(user.getId(),EntityType.valueOf(type),id);
+			hotTopicService.incScore(id,-1);
+			return new GeneralResultBean(-1,""+voteService.voteCount(EntityType.valueOf(type),id));
 		}else {
-			Question question;
-			if("question".equals(type)){
-				question = questionService.getQuestion(id);
-				questionService.upQuestion(question);
-			}
-			voteService.doVote(user.getId(),type,id);
-			return new GeneralResultBean(1,""+voteService.voteInform(type,id).getVoteCount());
+			voteService.doVote(user.getId(),EntityType.valueOf(type),id);
+			Event event = new Event(EventType.VOTE_EVENT,user.getId(),type,id);
+			event.addExt("id",id.toString());
+			eventManager.publishEvent(event);
+			return new GeneralResultBean(1,""+voteService.voteCount(EntityType.valueOf(type),id));
 		}
 
 	}

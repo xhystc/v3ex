@@ -20,7 +20,7 @@
                 voted
             </c:if>
          ">
-            <a href="javasrcipt:"
+            <a href="javascript:void(0)"
                onclick="dovote('question',${commentPage.question.id})"
                class="vote" id="vote-button-question-${commentPage.question.id}">^&nbsp;${commentPage.question.voteCount}</a>
         </div> &nbsp;
