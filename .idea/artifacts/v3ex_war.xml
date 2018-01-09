@@ -1,8 +1,0 @@
-<component name="ArtifactManager">
-  <artifact type="war" name="v3ex:war">
-    <output-path>$PROJECT_DIR$/target</output-path>
-    <root id="archive" name="v3ex.war">
-      <element id="artifact" artifact-name="v3ex:war exploded" />
-    </root>
-  </artifact>
-</component>
