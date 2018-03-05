@@ -5,17 +5,16 @@ import com.xhystc.v3ex.dao.MessageDao;
 import com.xhystc.v3ex.model.Conversation;
 import com.xhystc.v3ex.model.Message;
 import com.xhystc.v3ex.model.User;
-import com.xhystc.v3ex.model.vo.json.Problem;
-import com.xhystc.v3ex.model.vo.query.MessageQueryCondition;
+import com.xhystc.v3ex.model.vo.Problem;
 import com.xhystc.v3ex.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Component
 public class MessageServiceImpl implements MessageService
@@ -33,6 +32,7 @@ public class MessageServiceImpl implements MessageService
 		this.jedisPool = jedisPool;
 	}
 
+	@Transactional(rollbackFor = RuntimeException.class,isolation = Isolation.READ_COMMITTED)
 	@Override
 	public List<Problem> publishMessage(User from, User to, String content)
 	{
@@ -74,8 +74,8 @@ public class MessageServiceImpl implements MessageService
 	@Override
 	public List<Message> getMessages(Long userId,String conversationId)
 	{
-		MessageQueryCondition condition = new MessageQueryCondition();
-		condition.setConversation(conversationId);
+		Map<String,Object> condition = new HashMap<>(2);
+		condition.put("conversation",conversationId);
 		List<Message> messages = messageDao.selectMessages(condition);
 		messageDao.readAll(userId,conversationId);
 		return messages;

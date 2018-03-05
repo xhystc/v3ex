@@ -10,11 +10,11 @@ public class VoteInform
 	private Long lastVoteUser;
 	private int voteCount;
 
-	public static String voteInformId(String type,Long id){
-		return type+"_"+id;
+	public static String voteInformId(EntityType type,Long id){
+		return type.toString().toLowerCase()+"_"+id;
 	}
 	public static String voteInformId(Votable votable){
-		return votable.type()+"_"+votable.id();
+		return votable.type().toString().toLowerCase()+"_"+votable.id();
 	}
 
 	public String getType()

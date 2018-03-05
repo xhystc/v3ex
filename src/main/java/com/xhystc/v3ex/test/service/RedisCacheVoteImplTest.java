@@ -4,11 +4,7 @@ import com.xhystc.v3ex.commons.RedisUtils;
 import com.xhystc.v3ex.dao.QuestionDao;
 import com.xhystc.v3ex.model.EntityType;
 import com.xhystc.v3ex.model.Question;
-import com.xhystc.v3ex.model.Vote;
-import com.xhystc.v3ex.model.VoteInform;
-import com.xhystc.v3ex.model.vo.query.QuestionQueryCondition;
 import com.xhystc.v3ex.service.VoteService;
-import com.xhystc.v3ex.service.impl.RedisCacheVoteServiceImpl;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +13,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static org.junit.Assert.*;
 
@@ -38,15 +32,15 @@ public class RedisCacheVoteImplTest
 	@Test
 	public void doVote()
 	{
-		System.out.println(voteService.doVote(7L, EntityType.question,38L));
-		System.out.println(voteService.doVote(7L,EntityType.question,31L));
+		System.out.println(voteService.doVote(7L, EntityType.QUESTION,38L));
+		System.out.println(voteService.doVote(7L,EntityType.QUESTION,31L));
 	}
 
 	@Test
 	public void disVote()
 	{
-		System.out.println(voteService.disVote(34L,EntityType.question,1L));
-		System.out.println(voteService.disVote(35L,EntityType.question,1L));
+		System.out.println(voteService.disVote(34L,EntityType.QUESTION,1L));
+		System.out.println(voteService.disVote(35L,EntityType.QUESTION,1L));
 	}
 
 	@Test
@@ -61,9 +55,9 @@ public class RedisCacheVoteImplTest
 	@Test
 	public void fetchUserVotes()
 	{
-		QuestionQueryCondition condition = new QuestionQueryCondition();
-		condition.setOffset(0);
-		condition.setRows(1000);
+		Map<String,Object> condition = new HashMap<>();
+		condition.put("offset",0);
+		condition.put("rows",1000);
 		List<Question> questions = questionDao.selectQuestions(condition);
 		voteService.fetchUserVotes(38L,questions);
 		for(Question question :questions){
@@ -74,8 +68,8 @@ public class RedisCacheVoteImplTest
 	@Test
 	public void isVote()
 	{
-		System.out.println(voteService.isVote(35L,EntityType.question,2L));
-		System.out.println(voteService.isVote(35L,EntityType.question,33L));
+		System.out.println(voteService.isVote(35L,EntityType.QUESTION,2L));
+		System.out.println(voteService.isVote(35L,EntityType.QUESTION,33L));
 	}
 
 

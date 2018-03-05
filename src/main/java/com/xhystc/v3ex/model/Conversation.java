@@ -1,5 +1,8 @@
 package com.xhystc.v3ex.model;
 
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.Arrays;
 import java.util.Date;
 
 public class Conversation
@@ -10,6 +13,16 @@ public class Conversation
 
 	public static String conversationKey(Long id1,Long id2){
 		return Math.min(id1,id2)+"_"+Math.max(id1,id2);
+	}
+	public static String[] divIds(String id){
+		if(id == null){
+			return null;
+		}
+		String[] res = id.split("_");
+		if(res.length != 2 || !StringUtils.isNumeric(res[0]) || !StringUtils.isNumeric(res[1])){
+			return null;
+		}
+		return res;
 	}
 
 	public String getId()

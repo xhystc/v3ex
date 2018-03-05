@@ -4,9 +4,8 @@ import com.xhystc.v3ex.commons.RedisUtils;
 
 import com.xhystc.v3ex.dao.VoteDao;
 import com.xhystc.v3ex.model.*;
-import com.xhystc.v3ex.model.vo.query.VoteQueryCondition;
+
 import com.xhystc.v3ex.service.VoteService;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,9 +17,6 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.*;
 
@@ -28,15 +24,14 @@ import java.util.concurrent.*;
 public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,Runnable,InitializingBean
 {
 	static final private Logger logger = Logger.getLogger(RedisCacheVoteServiceImpl.class);
-	static final private String ACTIVE_PREFIX = "vote-active-";
-	static final private String INFORM_PREFIX = "vote-inform-";
 
-	private EntityType[] votableList = {EntityType.question,EntityType.comment};
+
+	private EntityType[] votableList = {EntityType.QUESTION,EntityType.COMMENT};
 	private VoteDao voteDao;
 	private JedisPool jedisPool;
 
 	@Value("#{configProperties['vote.active.timeout']}")
-	private long timeout = 1000*60*3;
+	private long timeout = 1000*60*1;
 
 
 	@Autowired
@@ -53,8 +48,8 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 	{
 		try (Jedis redis = jedisPool.getResource())
 		{
-			RedisUtils.active(redis, activeKey(type), id.toString());
-			String informKey = informKey(type, id);
+			RedisUtils.active(redis, RedisUtils.voteActiveKey(type), id.toString());
+			String informKey = RedisUtils.voteInformKey(type, id);
 			return redis.sadd(informKey,userId.toString())!=null;
 		}
 
@@ -66,8 +61,8 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 	{
 		try (Jedis redis = jedisPool.getResource())
 		{
-			RedisUtils.active(redis, activeKey(type), id.toString());
-			String informKey = informKey(type, id);
+			RedisUtils.active(redis, RedisUtils.voteActiveKey(type), id.toString());
+			String informKey = RedisUtils.voteInformKey(type, id);
 			Long res = redis.srem(informKey, userId.toString());
 			if(res !=null && res >0){
 				return true;
@@ -87,7 +82,7 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 	{
 		try (Jedis redis = jedisPool.getResource())
 		{
-			Long count = redis.scard(informKey(votable.type(),votable.id()));
+			Long count = redis.scard(RedisUtils.voteInformKey(votable.type(),votable.id()));
 			votable.setVoteCount(votable.getVoteCount()+(count==null?0:count.intValue()));
 			if (userId != null && userId > 0)
 			{
@@ -120,7 +115,7 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 	public int voteCount(EntityType type,Long id){
 		try (Jedis redis = jedisPool.getResource())
 		{
-			String key  = informKey(type,id);
+			String key  = RedisUtils.voteInformKey(type,id);
 			Long count = redis.scard(key);
 			return voteDao.getVoteCount(type,id)+(count==null?0:count.intValue());
 		}
@@ -137,6 +132,9 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 				Set<Long> ids = getTimeoutIds(redis,type,timeout);
 				dealVotableTimeout(redis,ids,type);
 			}
+		}catch (Exception e){
+			e.printStackTrace();
+			logger.info(e.getMessage());
 		}
 	}
 
@@ -155,7 +153,7 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 
 	private Set<Long> getTimeoutIds(Jedis redis,EntityType type,long timeout){
 		String activeKey;
-		activeKey = activeKey(type);
+		activeKey = RedisUtils.voteActiveKey(type);
 		long curr = System.currentTimeMillis();
 		Set<String> idSet = RedisUtils.getActiveByScore(redis, activeKey, curr-timeout);
 		RedisUtils.delActive(redis,activeKey,idSet);
@@ -173,7 +171,7 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 		Map<Long,Response<Set<String>>> responseMap = new HashMap<>(ids.size());
 		Pipeline pipeline = redis.pipelined();
 		for(Long id : ids){
-			responseMap.put(id,pipeline.smembers(informKey(type,id)));
+			responseMap.put(id,pipeline.smembers(RedisUtils.voteInformKey(type,id)));
 		}
 		pipeline.sync();
 
@@ -183,13 +181,13 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 
 
 			for(String s : userSet){
-				pipeline.srem(informKey(type,id),s);
+				pipeline.srem(RedisUtils.voteInformKey(type,id),s);
 				Long userId = Long.parseLong(s);
 				voteDao.insertVote(new Vote(userId,type,id));
 			}
 			pipeline.sync();
-			if(!RedisUtils.isActive(redis,activeKey(type),id.toString())){
-				redis.del(informKey(type,id));
+			if(!RedisUtils.isActive(redis,RedisUtils.voteActiveKey(type),id.toString())){
+				redis.del(RedisUtils.voteInformKey(type,id));
 			}
 		}
 
@@ -201,7 +199,7 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 		Map<Long,Response<Boolean>> responseMap = new HashMap<>(include.size());
 		Pipeline pipeline = redis.pipelined();
 		for(Long id : include){
-			String informKey = informKey(type,id);
+			String informKey = RedisUtils.voteInformKey(type,id);
 			responseMap.put(id,pipeline.sismember(informKey,userId.toString()));
 		}
 		pipeline.sync();
@@ -214,7 +212,7 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 
 	private boolean getIsVote(Jedis redis, Long userId, EntityType type, Long id)
 	{
-		String key = informKey(type, id);
+		String key = RedisUtils.voteInformKey(type, id);
 		return redis.sismember(key, userId.toString()) || voteDao.getVote(userId, type, id) != null;
 	}
 
@@ -228,13 +226,13 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 		Set<Long> voteIds = null;
 		if (userId != null && userId > 0)
 		{
-			VoteQueryCondition condition = new VoteQueryCondition();
+			Map<String,Object> condition = new HashMap<>();
 
-			condition.setParentType(type);
-			condition.setUserId(userId);
-			condition.setInclude(new HashSet<>(votables.size()));
+			condition.put("parentType",type);
+			condition.put("userId",userId);
+			condition.put("include",new HashSet<Long>(votables.size()));
 			for(Votable votable : votables){
-				condition.getInclude().add(votable.id());
+				((Set<Long>)condition.get("include")).add(votable.id());
 			}
 			List<Vote> votes = voteDao.selectVotes(condition);
 
@@ -243,7 +241,7 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 			{
 				voteIds.add(v.getParentId());
 			}
-			fetchRedisUserVotesSet(redis, voteIds, userId, type,condition.getInclude());
+			fetchRedisUserVotesSet(redis, voteIds, userId, type, (Set<Long>) condition.get("include"));
 
 			for (Votable votable : votables)
 			{
@@ -260,7 +258,7 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 		Pipeline pipeline = redis.pipelined();
 		for (Votable votable : votables)
 		{
-			responses.add(pipeline.scard(informKey(votable.type(),votable.id())));
+			responses.add(pipeline.scard(RedisUtils.voteInformKey(votable.type(),votable.id())));
 		}
 		pipeline.sync();
 
@@ -273,45 +271,6 @@ public class RedisCacheVoteServiceImpl extends TimerTask implements VoteService,
 
 	}
 
-
-	private static String activeKey(EntityType type)
-	{
-		return ACTIVE_PREFIX + type.toString();
-	}
-
-	private static String informKey(EntityType type, Long id)
-	{
-		return INFORM_PREFIX + type + "-" + id.toString();
-	}
-
-
-	private boolean needCache(String type,Long id){
-		return true;
-	}
-
-	private boolean needCache(Long userId){
-		return true;
-	}
-
-	public long getTimeout()
-	{
-		return timeout;
-	}
-
-	public void setTimeout(long timeout)
-	{
-		this.timeout = timeout;
-	}
-
-	public EntityType[] getVotableList()
-	{
-		return votableList;
-	}
-
-	public void setVotableList(EntityType[] votableList)
-	{
-		this.votableList = votableList;
-	}
 
 }
 

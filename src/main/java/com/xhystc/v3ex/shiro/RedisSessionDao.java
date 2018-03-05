@@ -51,8 +51,7 @@ public class RedisSessionDao extends CachingSessionDAO
 	@Override
 	protected Session doReadSession(Serializable serializable)
 	{
-		Session session = (Session) jedis.opsForValue().get(getSessionKey(serializable));
-		return session;
+		return (Session) jedis.opsForValue().get(getSessionKey(serializable));
 	}
 
 	private String getSessionKey(Session session){

@@ -1,5 +1,7 @@
 package com.xhystc.v3ex.model;
 
+import com.alibaba.fastjson.annotation.JSONField;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -8,11 +10,15 @@ public class User implements Serializable
 
 	private Long id;
 	private String name="";
+	@JSONField(serialize=false)
 	private String password="";
 	private Date registDate;
+	@JSONField(serialize=false)
 	private String email="";
 	private String iconUrl="";
+	@JSONField(serialize=false)
 	private String salt="";
+	@JSONField(serialize=false)
 	private Boolean isLocked = false;
 
 	public String getName()
@@ -25,6 +31,7 @@ public class User implements Serializable
 		this.name = name;
 	}
 
+	@JSONField(serialize=false)
 	public String getCredentialsSalt(){
 		return name+salt;
 	}

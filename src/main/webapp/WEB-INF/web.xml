@@ -114,15 +114,6 @@
             <param-name>targetFilterLifecycle</param-name>
             <param-value>true</param-value>
         </init-param>
-        <init-param>
-            <param-name>tokenPath</param-name>
-            <param-value>
-                /do_comment,
-                /do_login,
-                /do_regist,
-                /publish
-            </param-value>
-        </init-param>
     </filter>
 
     <filter-mapping>

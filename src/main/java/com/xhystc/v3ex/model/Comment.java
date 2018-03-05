@@ -1,5 +1,7 @@
 package com.xhystc.v3ex.model;
 
+import com.alibaba.fastjson.annotation.JSONField;
+
 import java.io.Serializable;
 import java.util.Date;
 
@@ -7,7 +9,8 @@ public class Comment implements Serializable,Votable,Commentable
 {
 	private Long id;
 	private User user;
-	private Question question;
+	private Long parentId;
+	private EntityType parentType;
 	private String content;
 	private int commentCount;
 	private Date sendDate;
@@ -36,14 +39,24 @@ public class Comment implements Serializable,Votable,Commentable
 		this.user = user;
 	}
 
-	public Question getQuestion()
+	public Long getParentId()
 	{
-		return question;
+		return parentId;
 	}
 
-	public void setQuestion(Question question)
+	public void setParentId(Long parentId)
 	{
-		this.question = question;
+		this.parentId = parentId;
+	}
+
+	public EntityType getParentType()
+	{
+		return parentType;
+	}
+
+	public void setParentType(EntityType parentType)
+	{
+		this.parentType = parentType;
 	}
 
 	public String getContent()
@@ -103,7 +116,7 @@ public class Comment implements Serializable,Votable,Commentable
 	@Override
 	public EntityType type()
 	{
-		return EntityType.comment;
+		return EntityType.COMMENT;
 	}
 
 	@Override

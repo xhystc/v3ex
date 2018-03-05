@@ -1,7 +1,7 @@
 package com.xhystc.v3ex.commons;
 
 import com.xhystc.v3ex.model.User;
-import com.xhystc.v3ex.model.vo.json.Problem;
+import com.xhystc.v3ex.model.vo.Problem;
 import com.xhystc.v3ex.service.UserService;
 import com.youbenzi.mdtool.tool.MDTool;
 import org.apache.shiro.SecurityUtils;
@@ -10,7 +10,6 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 import org.markdownj.MarkdownProcessor;
-import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
 import org.springframework.validation.FieldError;
 import org.springframework.web.util.HtmlUtils;
@@ -24,9 +23,9 @@ public class CommonUtils
 {
 
 	public static final String LINK_DIVIDE = ",";
-	public static final String LINK_BEGIN = "#!(";
+	public static final String LINK_BEGIN = "$!(";
 	public static final char LINK_END = ')';
-	public static final String LINK_TEMPLATE = "#!(%s,%s)";
+	public static final String LINK_TEMPLATE = "$!(%s,%s)";
 
 	public static final char AT_BEGIN = '@';
 
@@ -83,7 +82,6 @@ public class CommonUtils
 						setMethod.invoke(o,doc.getElementsByTag("body").html());
 
 					}
-					setMethod.invoke(o,s.replace("#!(","#！("));
 				}
 
 			}
@@ -135,6 +133,7 @@ public class CommonUtils
 	}
 
 	public static String AtEscape(String content, UserService userService){
+		content = content.replace(LINK_BEGIN,"$!（");
 		StringBuilder sb = new StringBuilder();
 		int ptr = 0;
 		while (ptr < content.length()){
@@ -179,14 +178,15 @@ public class CommonUtils
 		return content.length();
 	}
 
-	public static boolean handleErrors(Model model,Errors errors){
+	public static boolean handleErrors(Map<String,Object> model,Errors errors){
 		if(errors.hasErrors()){
 			Set<Problem> problems = CommonUtils.getProblems(errors);
-			model.addAttribute("problems",problems);
+			model.put("problems",problems);
 			return true;
 		}
 		return false;
 	}
+
 
 	private static Set<Problem> getProblems(Errors errors){
 		Set<Problem> problems = new HashSet<>(errors.getErrorCount());
@@ -196,6 +196,8 @@ public class CommonUtils
 		}
 		return problems;
 	}
+
+
 }
 
 

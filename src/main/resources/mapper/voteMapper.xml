@@ -18,7 +18,7 @@
         SELECT vote_count FROM ${param1} WHERE id = #{param2}
     </select>
 
-    <select id="selectVotes" parameterType="com.xhystc.v3ex.model.vo.query.VoteQueryCondition" resultMap="voteResultMap">
+    <select id="selectVotes" parameterType="map" resultMap="voteResultMap">
         SELECT * from vote
         <where>
             <if test="userId != null">

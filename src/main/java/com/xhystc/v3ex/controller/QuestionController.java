@@ -1,11 +1,17 @@
 package com.xhystc.v3ex.controller;
 
+import com.xhystc.v3ex.async.Event;
+import com.xhystc.v3ex.async.EventManager;
+import com.xhystc.v3ex.async.EventType;
 import com.xhystc.v3ex.commons.CommonUtils;
+import com.xhystc.v3ex.model.EntityType;
 import com.xhystc.v3ex.model.Question;
 import com.xhystc.v3ex.model.User;
 import com.xhystc.v3ex.model.vo.form.QuestionForm;
 import com.xhystc.v3ex.service.*;
+import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
+import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -13,10 +19,13 @@ import org.springframework.ui.Model;
 import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.SessionAttributes;
 
 import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SessionAttributes(value = {"unread"})
 @Controller
@@ -34,6 +43,7 @@ public class QuestionController
 	private MessageService messageService;
 	private HotTopicService hotTopicService;
 	private UserService userService;
+	private EventManager eventManager;
 
 
 	@Autowired
@@ -43,7 +53,8 @@ public class QuestionController
 	                          CommentService commentService,
 	                          MessageService messageService,
 	                          HotTopicService hotTopicService,
-	                          UserService userService)
+	                          UserService userService,
+	                          EventManager eventManager)
 	{
 		this.voteService = voteService;
 		this.tagService = tagService;
@@ -52,13 +63,15 @@ public class QuestionController
 		this.messageService = messageService;
 		this.hotTopicService = hotTopicService;
 		this.userService = userService;
+		this.eventManager = eventManager;
 	}
 
 
 
 	@RequestMapping(value = {"/","/index"})
 	public String index(Model model,@RequestParam(defaultValue = "1") int page,Long tagId){
-		List<Question> questions = doQuestions(page,tagId,model);
+		List<Question> questions = getQuestions(page,tagId);
+		commentService.fetchComments(questions);
 		model.addAttribute("questions", questions);
 		model.addAttribute("tags",tagService.getAllTag());
 		model.addAttribute("currentTag",tagId);
@@ -72,38 +85,73 @@ public class QuestionController
 		if(currentUser!=null){
 			model.addAttribute("unread",messageService.unread(currentUser.getId()));
 		}
+
 		return "v2ex";
 	}
 
-	@RequestMapping(value = "/questions")
-	public String questions(@RequestParam(defaultValue = "2") int page,Long tagId,Model model){
-		List<Question> questions = doQuestions(page,tagId,model);
-		model.addAttribute("questions", questions);
-		return "item";
+	@RequestMapping(value = "/questions",headers = {"x-requested-with=XMLHttpRequest","Accept=application/json"})
+	public @ResponseBody Map<String,Object> questionsService(@RequestParam(defaultValue = "1") int page, Long tagId){
+		List<Question> questions = getQuestions(page,tagId);
+		Map<String,Object> ret = new HashMap<>(2);
+		ret.put("questions", questions);
+		return ret;
 	}
 
+	@RequiresRoles("user")
 	@RequestMapping("/publish_question")
 	public String publish(@Valid QuestionForm form, Errors errors, Model m){
 
-		if(CommonUtils.handleErrors(m,errors)){
+		if(CommonUtils.handleErrors(m.asMap(),errors)){
 			return editQuestion(m);
 		}
+
 		form.setContent(CommonUtils.AtEscape(form.getContent(),userService));
 		CommonUtils.escapeFormModle(form);
 
 		User user = CommonUtils.getCurrentUser();
 
-		questionService.publishQuetion(user,form);
+		Long id = questionService.publishQuetion(user,form);
+		if(id!=null && id>0){
+			Event event = new Event(EventType.PUBLISH_QUESTION,user.getId(), EntityType.QUESTION,id);
+			eventManager.publishEvent(event);
+		}
+
+
 		return "redirect:/index";
 	}
 
+	@RequiresRoles("user")
+	@RequestMapping(value = "/publish_question",headers = {"x-requested-with=XMLHttpRequest","Accept=application/json"})
+	public @ResponseBody Map<String,Object> publishService(@Valid QuestionForm form, Errors errors){
+		Map<String,Object> ret = new HashMap<>(3);
+		if(CommonUtils.handleErrors(ret,errors)){
+			ret.put("result",-1);
+			return ret;
+		}
+
+		form.setContent(CommonUtils.AtEscape(form.getContent(),userService));
+		CommonUtils.escapeFormModle(form);
+
+		User user = CommonUtils.getCurrentUser();
+
+		Long id = questionService.publishQuetion(user,form);
+		if(id!=null && id>0){
+			Event event = new Event(EventType.PUBLISH_QUESTION,user.getId(), EntityType.QUESTION,id);
+			eventManager.publishEvent(event);
+		}
+		ret.put("result",0);
+
+		return ret;
+	}
+
+	@RequiresRoles("user")
 	@RequestMapping("/edit_question")
 	public String editQuestion(Model model){
 		model.addAttribute("tags",tagService.getAllTag());
 		return "question_edit";
 	}
 
-	private List<Question> doQuestions(int page,Long tagId,Model model){
+	private List<Question> getQuestions(int page, Long tagId){
 		List<Question> questions = questionService.getQuestions(tagId,page,pageSize);
 		Long userId = CommonUtils.getCurrentUser()==null? null : CommonUtils.getCurrentUser().getId();
 		voteService.fetchUserVotes(userId,questions);

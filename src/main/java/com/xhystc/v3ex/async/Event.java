@@ -1,5 +1,7 @@
 package com.xhystc.v3ex.async;
 
+import com.xhystc.v3ex.model.EntityType;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,7 +9,7 @@ public class Event
 {
 	private EventType eventType;
 	private Long sourceId;
-	private String entityType;
+	private EntityType entityType;
 	private Long entityId;
 
 	private Map<String,String> ext = new HashMap<>();
@@ -16,7 +18,7 @@ public class Event
 	{
 	}
 
-	public Event(EventType eventType, Long sourceId, String entityType, Long entityId)
+	public Event(EventType eventType, Long sourceId, EntityType entityType, Long entityId)
 	{
 		this.eventType = eventType;
 		this.sourceId = sourceId;
@@ -51,12 +53,12 @@ public class Event
 		this.sourceId = sourceId;
 	}
 
-	public String getEntityType()
+	public EntityType getEntityType()
 	{
 		return entityType;
 	}
 
-	public void setEntityType(String entityType)
+	public void setEntityType(EntityType entityType)
 	{
 		this.entityType = entityType;
 	}
@@ -69,6 +71,16 @@ public class Event
 	public void setEntityId(Long entityId)
 	{
 		this.entityId = entityId;
+	}
+
+	public Map<String, String> getExt()
+	{
+		return ext;
+	}
+
+	public void setExt(Map<String, String> ext)
+	{
+		this.ext = ext;
 	}
 }
 

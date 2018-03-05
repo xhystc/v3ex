@@ -75,6 +75,6 @@
 
 
     <%@include file="bottom.jsp"%>
-    <script src="${path}/static/js/jquery-3.2.1.js" type="text/javascript"></script>
+    <script src="${path}/static/jquery-3.2.1.js" type="text/javascript"></script>
     </body>
     </html>

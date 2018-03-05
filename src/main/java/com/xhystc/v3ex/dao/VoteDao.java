@@ -2,16 +2,15 @@ package com.xhystc.v3ex.dao;
 
 import com.xhystc.v3ex.model.EntityType;
 import com.xhystc.v3ex.model.Vote;
-import com.xhystc.v3ex.model.VoteInform;
-import com.xhystc.v3ex.model.vo.query.VoteQueryCondition;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 
 @Component
 public interface VoteDao
 {
-	List<Vote> selectVotes(VoteQueryCondition condition);
+	List<Vote> selectVotes(Map<String,Object> condition);
 	int deleteVote(Vote vote);
 	int insertVote(Vote vote);
 	List<Vote> getUserVotes(Long userId);

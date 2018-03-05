@@ -1,5 +1,6 @@
 package com.xhystc.v3ex.commons;
 
+import com.xhystc.v3ex.model.EntityType;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Tuple;
@@ -13,7 +14,11 @@ public class RedisUtils
 	public static void active(Jedis redis, String key, String value){
 		redis.zadd(key,System.currentTimeMillis(),value);
 	}
-
+	static final private String VOTE_ACTIVE_PREFIX = "vote-active-";
+	static final private String VOTE_INFORM_PREFIX = "vote-inform-";
+	static final private String QUESTION_ACTIVE_PREFIX = "question-rank";
+	static final private String RANK_INFORM_KEY = "rank-inform-key";
+	static final private String QUESTION_SCORE_MODIFY = "question-score-modify";
 
 	public static void delActive(Jedis redis,String key,String value){
 		redis.zrem(key,value);
@@ -55,6 +60,26 @@ public class RedisUtils
 		pipeline.sync();
 	}
 
+	public static String voteActiveKey(EntityType type)
+	{
+		return VOTE_ACTIVE_PREFIX + type.toString();
+	}
+
+	public static String voteInformKey(EntityType type, Long id)
+	{
+		return VOTE_INFORM_PREFIX + type + "-" + id.toString();
+	}
+	public static String questionActiveKey(){
+		return QUESTION_ACTIVE_PREFIX;
+	}
+	public static String questionActiveKey(Long tagId){
+		return tagId==null?QUESTION_ACTIVE_PREFIX:QUESTION_ACTIVE_PREFIX+"-"+tagId;
+	}
+
+
+	public static String questionScoreModityKey(){
+		return QUESTION_SCORE_MODIFY;
+	}
 
 
 }

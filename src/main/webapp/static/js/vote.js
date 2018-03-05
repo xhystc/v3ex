@@ -6,8 +6,9 @@ function dovote(type,id) {
         var voteParam = {
             questionId:id
         };
-        $.post(path+'/vote/service/do_vote',voteParam,function (data) {
-                if(data.code===0){
+        $.post(path+'/do_vote',voteParam,function (data) {
+
+                if(data.result!==0){
                     alert(data.hint);
                 }else {
                     var $button = $('#vote-button-question-'+id);
@@ -20,12 +21,12 @@ function dovote(type,id) {
                 }
         });
     }else if(type==='comment'){
+
         var voteParam = {
             commentId:id
         };
-        $.post(path+'/vote/service/do_vote',voteParam,function (data) {
-            console.log(data.hint);
-            if(data.code===0){
+        $.post(path+'/do_vote',voteParam,function (data) {
+            if(data.result!==0){
                 alert(data.hint);
             }else {
                 var $agree = $('#comment-item-agree-'+id);

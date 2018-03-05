@@ -17,16 +17,8 @@
         <property name="securityManager" ref="securityManager" />
         <!-- 登录路径 -->
         <property name="loginUrl" value="/login" />
-        <!-- 过滤链定义 -->
-        <property name="filterChainDefinitions">
-            <value>
-                /logout=logout
-                /service/**=roles[user]
-                /message=roles[user]
-                /publish*=roles[user]
-            </value>
-        </property>
     </bean>
+
 
     <!-- shiro session cookie 配置-->
     <bean id="sessionIdCookie" class="org.apache.shiro.web.servlet.SimpleCookie">

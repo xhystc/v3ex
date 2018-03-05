@@ -4,13 +4,17 @@ import com.xhystc.v3ex.async.Event;
 import com.xhystc.v3ex.async.EventHandler;
 import com.xhystc.v3ex.async.EventType;
 import com.xhystc.v3ex.commons.CommonUtils;
+import com.xhystc.v3ex.commons.QuestionRankUtils;
 import com.xhystc.v3ex.model.Comment;
+import com.xhystc.v3ex.model.EntityType;
 import com.xhystc.v3ex.model.Question;
 import com.xhystc.v3ex.model.User;
 import com.xhystc.v3ex.service.*;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 
 @Component("voteEventHandler")
 public class VoteEventHandler implements EventHandler
@@ -25,7 +29,8 @@ public class VoteEventHandler implements EventHandler
 
 	@Autowired
 	public VoteEventHandler(UserService userService, CommentService commentService,
-	                        QuestionService questionService,MessageService messageService,HotTopicService hotTopicService)
+	                        QuestionService questionService,MessageService messageService,
+	                        HotTopicService hotTopicService,JedisPool jedisPool)
 	{
 		this.userService = userService;
 		this.commentService = commentService;
@@ -42,20 +47,29 @@ public class VoteEventHandler implements EventHandler
 			User source = userService.getUserById(event.getSourceId());
 			User system = userService.getUserById(4L);
 
-			if("question".equals(event.getEntityType())){
+			if(EntityType.QUESTION.equals(event.getEntityType())){
+
 				Question question = questionService.getQuestionById(event.getEntityId());
 				String userLink = String.format(CommonUtils.LINK_TEMPLATE,"/user/"+source.getId(),source.getName());
 				String questionLink = String.format(CommonUtils.LINK_TEMPLATE,"/q/"+question.getId(),question.getTitle());
 				String content = userLink+" 给你的提问"+questionLink+" 点了赞";
 				messageService.publishMessage(system,question.getUser(),content);
 				hotTopicService.incScore(question.getId(),1);
-			}else if("comment".equals(event.getEntityType())){
+
+
+			}else if(EntityType.COMMENT.equals(event.getEntityType())){
+
 				Comment comment = commentService.getCommentById(event.getEntityId());
 				String userLink = String.format(CommonUtils.LINK_TEMPLATE,"/user/"+source.getId(),source.getName());
-				String questionLink = String.format(CommonUtils.LINK_TEMPLATE,"/q/"+comment.getQuestion().getId(),comment.getQuestion().getTitle());
-				String content = userLink+" 给你在"+questionLink+"的回复点了赞";
+				String questionLink = String.format(CommonUtils.LINK_TEMPLATE,"/q/"+comment.getParentId(),comment.getContent());
+				String content = userLink+" 给你的回复："+questionLink+"点了赞";
 				messageService.publishMessage(system,comment.getUser(),content);
+
+
+			}else {
+				logger.debug("??????????");
 			}
+
 		}
 	}
 }

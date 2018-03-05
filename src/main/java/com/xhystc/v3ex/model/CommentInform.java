@@ -9,11 +9,11 @@ public class CommentInform
 	private Date lastCommentTime;
 	private int commentCount;
 
-	public static String commentInformId(String type,Long id){
-		return type+"_"+id;
+	public static String commentInformId(EntityType type,Long id){
+		return type.toString().toLowerCase()+"_"+id;
 	}
 	public static String commentInformId(Commentable commentable){
-		return commentable.type()+"_"+commentable.id();
+		return commentable.type().toString().toLowerCase()+"_"+commentable.id();
 	}
 
 	public String getId()

@@ -13,8 +13,9 @@
     <bean id="tokenFilter" class="com.xhystc.v3ex.commons.TokenFilter">
         <property name="tokenPath">
             <list>
-                <value>/do_</value>
-                <value>/publish</value>
+                <value>do_login</value>
+                <value>do_regist</value>
+                <value>publish</value>
             </list>
         </property>
         <property name="excludedPrefix">
@@ -34,6 +35,8 @@
         <property name="handlers">
             <list>
                 <ref bean="voteEventHandler"/>
+                <ref bean="questionRankUpdateHandler"/>
+                <ref bean="solrRankScoreUpdateHandle"/>
             </list>
         </property>
     </bean>

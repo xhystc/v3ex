@@ -41,7 +41,7 @@
                     </td>
                     <td width="auto" align="left">
                         <div id="Search">
-                            <form action="https://www.google.com" onsubmit="return dispatch()" target="_blank" style="padding-top: 6px">
+                            <form action="${path}/search"  target="_blank" style="padding-top: 6px">
                                 <div style="width: 276px; height: 28px; background-size: 276px 28px;
                                         background-image: url('${path}/static/img/qbar_light@2x.png');
                                         background-repeat: no-repeat; display: inline-block;">

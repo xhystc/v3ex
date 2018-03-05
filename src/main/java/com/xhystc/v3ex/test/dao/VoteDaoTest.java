@@ -4,7 +4,6 @@ import com.xhystc.v3ex.dao.VoteDao;
 import com.xhystc.v3ex.model.EntityType;
 import com.xhystc.v3ex.model.Vote;
 import com.xhystc.v3ex.model.VoteInform;
-import com.xhystc.v3ex.model.vo.query.VoteQueryCondition;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +12,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.*;
 
@@ -31,14 +32,10 @@ public class VoteDaoTest
 	@Test
 	public void selectVote() throws Exception
 	{
-		VoteQueryCondition condition = new VoteQueryCondition();
-		condition.setInclude(new HashSet<>());
-		/*condition.getInclude().add(37L);
-		condition.getInclude().add(39L);
-		condition.getInclude().add(38L);
-		condition.getInclude().add(50L);
-		condition.setUserId(38L);*/
-		condition.setParentType(EntityType.question);
+		Map<String,Object> condition = new HashMap<>(3);
+		condition.put("include",new HashSet<Long>());
+
+		condition.put("parentType",EntityType.QUESTION);
 
 		List<Vote> vs = voteDao.selectVotes(condition);
 		for(Vote v : vs){
@@ -54,7 +51,7 @@ public class VoteDaoTest
 		Vote vote = new Vote();
 		vote.setParentId(1L);
 		vote.setUserId(4L);
-		vote.setParentType(EntityType.question);
+		vote.setParentType(EntityType.QUESTION);
 
 		voteDao.deleteVote(vote);
 	}
@@ -67,7 +64,7 @@ public class VoteDaoTest
 		Vote vote = new Vote();
 		vote.setParentId(1L);
 		vote.setUserId(4L);
-		vote.setParentType(EntityType.question);
+		vote.setParentType(EntityType.QUESTION);
 
 		voteDao.insertVote(vote);
 	}

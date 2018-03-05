@@ -1,7 +1,6 @@
 package com.xhystc.v3ex.service.impl;
 
 import com.xhystc.v3ex.dao.QuestionDao;
-import com.xhystc.v3ex.model.vo.query.QuestionQueryCondition;
 import com.xhystc.v3ex.service.HotTopicService;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -12,10 +11,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.Pipeline;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -65,10 +61,11 @@ public class QuestionHotTopicServiceImpl implements HotTopicService,Initializing
 			{
 				return Collections.EMPTY_LIST;
 			}
-			QuestionQueryCondition condition = new QuestionQueryCondition();
-			condition.setInclude(new HashSet<>(idSet.size()));
+			Map<String,Object> condition = new HashMap<>(5);
+			condition.put("include",new HashSet<Long>(idSet.size()));
 			for(String s : idSet){
-				condition.getInclude().add(Long.parseLong(s));
+				HashSet set = (HashSet) condition.get("include");
+				set.add(Long.parseLong(s));
 			}
 
 			return questionDao.selectQuestions(condition);

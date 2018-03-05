@@ -43,14 +43,20 @@ public class EventManager implements Runnable,InitializingBean
 	{
 		logger.debug("event manager thread running");
 		while (true){
+			logger.debug("do event loop");
 			Event event = pollEvent();
 			if (event!=null){
 				logger.debug("manager get event:"+event.getEntityType());
 				for(EventHandler handler : handlers){
-					handler.handle(event);
+					try
+					{
+						handler.handle(event);
+					}catch (Exception e){
+						logger.debug("event handel exception:"+e.getMessage());
+						e.printStackTrace();
+						throw e;
+					}
 				}
-			}else {
-				return;
 			}
 		}
 	}
@@ -64,12 +70,14 @@ public class EventManager implements Runnable,InitializingBean
 			public Thread newThread(Runnable r)
 			{
 				Thread thread = new Thread(r);
-				thread.setName("event handle thread");
 				thread.setDaemon(true);
+				thread.setName("event manager event thread");
 				return thread;
 			}
 		});
-		service.submit(this);
+		service.execute(this);
+
+		logger.debug("event manager init");
 
 	}
 

@@ -7,6 +7,8 @@
         <result column="r_comment_count" property="commentCount"/>
         <result column="vote_count" property="voteCount"/>
         <result column="content" property="content"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="parent_type" property="parentType"/>
         <association property="user" column="user_id" javaType="com.xhystc.v3ex.model.User" >
             <id column="uid" property="id"/>
             <result column="name" property="name"/>
@@ -17,16 +19,12 @@
             <result column="is_locked" property="isLocked"/>
             <result column="regist_date" property="registDate"/>
         </association>
-        <association property="question" column="parent_id" select="com.xhystc.v3ex.dao.QuestionDao.getQuestionById">
-
-        </association>
     </resultMap>
 
     <select id="getCommentById" resultMap="commentResultMapper" parameterType="java.lang.Long">
-        SELECT c.*,u.*,u.id AS uid,q.*,q.id AS qid
+        SELECT c.*,u.*,u.id AS uid
         FROM comment c
         LEFT JOIN user u ON u.id = c.user_id
-        LEFT JOIN question q ON c.parent_id = q.id
         where c.id = #{_parameter}
     </select>
     <update id="updateComment" parameterType="com.xhystc.v3ex.model.Comment">
@@ -47,18 +45,21 @@
     </delete>
 
     <insert id="insertComment" parameterType="com.xhystc.v3ex.model.Comment"  useGeneratedKeys="true" keyProperty="id" >
-        INSERT INTO comment(user_id,  parent_id, content)
-                VALUES (#{user.id},#{question.id},#{content});
+        INSERT INTO comment(user_id,parent_type,parent_id, content)
+                VALUES (#{user.id},#{parentType},#{parentId},#{content});
     </insert>
 
 
-    <select id="selectComments" parameterType="com.xhystc.v3ex.model.vo.query.CommentQueryCondition" resultMap="commentResultMapper">
+    <select id="selectComments" parameterType="map" resultMap="commentResultMapper">
         SELECT c.*,u.*,u.id AS uid
         FROM comment c
         LEFT JOIN user u on u.id = c.user_id
         <where>
+            <if test="parentType !=null">
+                parent_type = #{parentType}
+            </if>
             <if test="parentId != null">
-               parent_id = #{parentId}
+               AND parent_id = #{parentId}
             </if>
             <if test="userId != null">
                 AND user_id = #{userId}
@@ -91,9 +92,6 @@
             <when test="offset>=0 and rows >0">
                 LIMIT ${offset},${rows}
             </when>
-            <otherwise>
-                LIMIT 0,20
-            </otherwise>
         </choose>
     </select>
 

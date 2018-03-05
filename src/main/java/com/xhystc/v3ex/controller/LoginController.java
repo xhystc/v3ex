@@ -4,8 +4,7 @@ package com.xhystc.v3ex.controller;
 import com.xhystc.v3ex.commons.CommonUtils;
 import com.xhystc.v3ex.model.vo.form.LoginForm;
 import com.xhystc.v3ex.model.vo.form.UserRegistForm;
-import com.xhystc.v3ex.model.vo.json.GeneralResultBean;
-import com.xhystc.v3ex.model.vo.json.Problem;
+import com.xhystc.v3ex.model.vo.Problem;
 import com.xhystc.v3ex.service.UserService;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.log4j.Logger;
@@ -21,7 +20,6 @@ import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.util.*;
 
@@ -47,7 +45,7 @@ public class LoginController
 	private int interval;
 
 	@RequestMapping(value = "/do_login")
-	public  String dologin(LoginForm form,Model model, HttpSession session)
+	public  String dologin(LoginForm form,Model model)
 	{
 		logger.info("user:"+form.getUsername()+" login");
 
@@ -88,7 +86,7 @@ public class LoginController
 			return "redirect:/index";
 		}
 		model.addAttribute("problems",problems);
-		return login(session,model);
+		return login();
 	}
 
 	@RequestMapping("/logout")
@@ -99,9 +97,9 @@ public class LoginController
 	}
 
 	@RequestMapping("/do_regist")
-	public String doRegist(@Valid UserRegistForm form, Errors errors, Model mv,HttpSession session){
+	public String doRegist(@Valid UserRegistForm form, Errors errors, Model mv){
 
-		if(CommonUtils.handleErrors(mv,errors))
+		if(CommonUtils.handleErrors(mv.asMap(),errors))
 		{
 			return regist();
 		}
@@ -116,26 +114,39 @@ public class LoginController
 		return regist();
 	}
 
-	@RequestMapping("/doregist/username_check")
-	public @ResponseBody GeneralResultBean usernameCheck(String username){
-		if(userService.usernameExist(StringEscapeUtils.escapeHtml4(username))){
-			return new GeneralResultBean(1,"exist");
+	@RequestMapping(value = "/username_check",headers = {"x-requested-with=XMLHttpRequest","Accept=application/json"})
+	public @ResponseBody Map<String,Object> usernameCheck(String username){
+		Map<String,Object> ret = new HashMap<>(2);
+		ret.put("result",0);
+		if(userService.getUserByName(StringEscapeUtils.escapeHtml4(username))!=null){
+			ret.put("exit",1);
+		}else {
+			ret.put("exit",0);
 		}
-		return new GeneralResultBean(0,"not exist");
+		return ret;
 	}
-	@RequestMapping("/doregist/email_check")
-	public @ResponseBody GeneralResultBean emailCheck(String email){
-		if(userService.emailExist(StringEscapeUtils.escapeHtml4(email))){
-			return new GeneralResultBean(1,"exist");
+	@RequestMapping(value = "/email_check",headers = {"x-requested-with=XMLHttpRequest","Accept=application/json"})
+	public @ResponseBody Map<String,Object> emailCheck(String email){
+		Map<String,Object> ret = new HashMap<>(2);
+		ret.put("result",0);
+		if(userService.getUserByEmail(StringEscapeUtils.escapeHtml4(email))!=null){
+			ret.put("exit",1);
+		}else {
+			ret.put("exit",0);
 		}
-		return new GeneralResultBean(0,"not exist");
+		return ret;
 	}
 
-
+	@RequestMapping(value = "/hint_username",headers =  {"x-requested-with=XMLHttpRequest","Accept=application/json"})
+	public @ResponseBody Map<String,Object> hintUsername(String name){
+		Map<String,Object> ret = new HashMap<>(2);
+		ret.put("result",0);
+		ret.put("users",userService.getUserByUsersnamePrefix(name));
+		return ret;
+	}
 
 	@RequestMapping("/login")
-	public String login(HttpSession session, Model model){
-
+	public String login(){
 		return "login";
 	}
 

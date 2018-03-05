@@ -4,8 +4,7 @@ import com.xhystc.v3ex.commons.PasswordHelper;
 import com.xhystc.v3ex.dao.UserDao;
 import com.xhystc.v3ex.model.User;
 import com.xhystc.v3ex.model.vo.form.UserRegistForm;
-import com.xhystc.v3ex.model.vo.json.Problem;
-import com.xhystc.v3ex.model.vo.query.UserQueryCondition;
+import com.xhystc.v3ex.model.vo.Problem;
 import com.xhystc.v3ex.service.UserService;
 import org.apache.shiro.util.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 @Component
-@Transactional(rollbackFor = RuntimeException.class)
 public class UserServiceImpl implements UserService
 {
 
@@ -39,9 +37,21 @@ public class UserServiceImpl implements UserService
 	}
 
 	@Override
+	public User getUserByEmail(String email)
+	{
+		return userDao.getUserByEmail(email);
+	}
+
+	@Override
 	public User getUserById(Long id)
 	{
 		return userDao.getUserById(id);
+	}
+
+	@Override
+	public List<User> getUserByUsersnamePrefix(String prefix)
+	{
+		return null;
 	}
 
 	@Override
@@ -56,11 +66,15 @@ public class UserServiceImpl implements UserService
 	}
 
 
+	@Transactional(rollbackFor = RuntimeException.class)
 	@Override
 	public Set<Problem> userRegist(UserRegistForm form)
 	{
 		Set<Problem> ret = new HashSet<>(2);
-		List<User> users = userDao.selectUsers(new UserQueryCondition(form.getUsername(),form.getEmail()));
+		Map<String,Object> codition = new HashMap<>(2);
+		codition.put("username",form.getUsername());
+		codition.put("email",form.getEmail());
+		List<User> users = userDao.selectUsers(codition);
 		if(users!=null && users.size()>0){
 			User u = users.get(0);
 			if(u.getName().equals(form.getUsername())){
@@ -95,23 +109,6 @@ public class UserServiceImpl implements UserService
 		return ret;
 	}
 
-	@Override
-	public boolean usernameExist(String username)
-	{
-		if( userDao.selectUsers(new UserQueryCondition(username,null))==null){
-			return false;
-		}
-		return true;
-	}
-
-	@Override
-	public boolean emailExist(String email)
-	{
-		if(userDao.selectUsers(new UserQueryCondition(null,email))==null){
-			return false;
-		}
-		return true;
-	}
 }
 
 

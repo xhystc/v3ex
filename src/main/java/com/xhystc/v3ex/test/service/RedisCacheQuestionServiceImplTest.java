@@ -1,7 +1,11 @@
 package com.xhystc.v3ex.test.service;
 
+import com.xhystc.v3ex.async.handler.QuestionRankUpdateHandler;
 import com.xhystc.v3ex.commons.CommonUtils;
+import com.xhystc.v3ex.commons.QuestionRankUtils;
+import com.xhystc.v3ex.dao.QuestionDao;
 import com.xhystc.v3ex.model.Question;
+import com.xhystc.v3ex.service.CommentService;
 import com.xhystc.v3ex.service.QuestionService;
 import com.xhystc.v3ex.service.UserService;
 import org.junit.Test;
@@ -11,6 +15,7 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
+import redis.clients.jedis.JedisPool;
 
 import java.util.List;
 
@@ -20,9 +25,16 @@ public class RedisCacheQuestionServiceImplTest
 {
 	@Autowired
 	QuestionService questionService;
-
+	@Autowired
+	CommentService commentService;
+	@Autowired
+	QuestionDao questionDao;
 	@Autowired
 	UserService userService;
+	@Autowired
+	JedisPool jedisPool;
+	@Autowired
+	QuestionRankUpdateHandler handler;
 
 	@Test
 	public void getQuestion()
@@ -57,10 +69,14 @@ public class RedisCacheQuestionServiceImplTest
 	}
 
 	@Test
-	public void afterPropertiesSet()
-	{
-		questionService.storeQuestions();
+	public void storeQuestions(){
+		QuestionRankUtils.storeRedisQuestionRank(questionDao,handler);
 	}
+	@Test
+	public void scoreTest(){
+		System.out.println(Math.log(89));
+	}
+
 	@Test
 	@Transactional(rollbackFor = Exception.class)
 	@Rollback(false)

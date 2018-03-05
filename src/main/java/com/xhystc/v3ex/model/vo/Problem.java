@@ -1,4 +1,4 @@
-package com.xhystc.v3ex.model.vo.json;
+package com.xhystc.v3ex.model.vo;
 
 public class Problem
 {

@@ -4,9 +4,9 @@ import com.xhystc.v3ex.dao.CommentDao;
 import com.xhystc.v3ex.dao.QuestionDao;
 import com.xhystc.v3ex.dao.UserDao;
 import com.xhystc.v3ex.model.Comment;
+import com.xhystc.v3ex.model.EntityType;
 import com.xhystc.v3ex.model.Question;
 import com.xhystc.v3ex.model.User;
-import com.xhystc.v3ex.model.vo.query.CommentQueryCondition;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +15,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RunWith(SpringJUnit4ClassRunner.class)  //使用junit4进行测试
 @ContextConfiguration(locations = {"classpath:conf/applicationContext.xml", "classpath:conf/applicationContext-mybatis.xml"})
@@ -67,7 +69,8 @@ public class CommentDaoTest
 			comment.setUser(user);
 			Question question = new Question();
 			question.setId(36L);
-			comment.setQuestion(question);
+			comment.setParentId(question.getId());
+			comment.setParentType(EntityType.QUESTION);
 			commentDao.insertComment(comment);
 		}
 	}
@@ -79,14 +82,15 @@ public class CommentDaoTest
 	@Test
 	public void selectComment() throws Exception
 	{
-		CommentQueryCondition condition = new CommentQueryCondition();
-		condition.setOffset(0);
-		condition.setRows(100);
-		condition.setParentId(51L);
-
+		Map<String,Object> condition = new HashMap<>(4);
+		condition.put("offset",0);
+		condition.put("rows",100);
+		condition.put("parentId",33L);
+		condition.put("parentType",EntityType.QUESTION);
 		List<Comment> comments = commentDao.selectComments(condition);
 		for(Comment c : comments){
-			System.out.println(c.getQuestion().getTag().getName());
+			Question question = questionDao.getQuestionById(c.getParentId());
+			System.out.println(question.getTitle());
 		}
 
 	}

@@ -2,7 +2,6 @@ package com.xhystc.v3ex.test.dao;
 
 import com.xhystc.v3ex.dao.UserDao;
 import com.xhystc.v3ex.model.User;
-import com.xhystc.v3ex.model.vo.query.UserQueryCondition;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +10,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 @RunWith(SpringJUnit4ClassRunner.class)  //使用junit4进行测试
@@ -26,7 +27,10 @@ public class UserDaoTest
 	@Transactional(rollbackFor = Exception.class)
 	@Rollback(false)
 	public void test(){
-		List<User> user = userDao.selectUsers(new UserQueryCondition("test",null));
+		Map<String,Object> condition = new HashMap<>(3);
+		condition.put("username","test");
+
+		List<User> user = userDao.selectUsers(condition);
 		user.get(0).setEmail("guodongzhanhun@qq.com");
 		System.out.println(user.get(0).getEmail());
 		userDao.deleteUserById((long) 23);

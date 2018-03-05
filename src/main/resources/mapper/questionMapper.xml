@@ -69,12 +69,13 @@
     </update>
 
 
-    <select id="selectQuestions" parameterType="com.xhystc.v3ex.model.vo.query.QuestionQueryCondition"
-            resultMap="com.xhystc.v3ex.dao.QuestionDao.questionResultMap">
-        SELECT  q.*,u.*,u.id AS uid,t.*,t.id AS tid,t.name AS tag_name,t.icon AS tag_icon
+    <select id="selectQuestions" parameterType="map" resultMap="com.xhystc.v3ex.dao.QuestionDao.questionResultMap">
+        SELECT q.*,u.*,u.id AS id,t.*,t.id AS tid,t.name AS tag_name,t.icon AS tag_icon
         FROM question q
-        LEFT JOIN user  u ON q.user_id = u.id
+        LEFT JOIN user u ON u.id = q.user_id
         LEFT JOIN tag t ON q.tag = t.id
+        INNER JOIN
+        (SELECT id FROM question q2
         <where>
             <if test="userId != null">
                 user_id = #{userId}
@@ -86,45 +87,45 @@
                 and tag = #{tagId}
             </if>
             <if test="include != null and include.size >0">
-                and q.id in
+                and q2.id in
                 <foreach collection="include" item="id" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
-
         </where>
-       <if test="needOrder">
-           ORDER BY
-           <choose>
-               <when test="orderBy !=null ">
-                   ${orderBy}
-               </when>
-               <otherwise>
-                   create_date
-               </otherwise>
-           </choose>
-           <choose>
-               <when test="order !=null ">
-                   ${order}
-               </when>
-               <otherwise>
-                   DESC
-               </otherwise>
-           </choose>
-       </if>
-       <if test="needLimit">
-           LIMIT
-           <choose>
-               <when test="offset >=0 and rows>0">
-                   ${offset},${rows}
-               </when>
-               <otherwise>
-                   0,20
-               </otherwise>
-           </choose>
-       </if>
-
+        <if test="orderBy != null || order !=null ">
+            ORDER BY
+            <choose>
+                <when test="orderBy !=null ">
+                    ${orderBy}
+                </when>
+                <otherwise>
+                    create_date
+                </otherwise>
+            </choose>
+            <choose>
+                <when test="order !=null ">
+                    ${order}
+                </when>
+                <otherwise>
+                    DESC
+                </otherwise>
+            </choose>
+        </if>
+        <if test="offset != null" >
+            LIMIT
+            <choose>
+                <when test="offset >=0 and rows>0">
+                    ${offset},${rows}
+                </when>
+                <otherwise>
+                    0,20
+                </otherwise>
+            </choose>
+        </if>) as b ON q.id=b.id
+        ;
     </select>
+
     <select id="total" resultType="java.lang.Integer">
         SELECT count(*) FROM question
         <if test="_parameter != null">

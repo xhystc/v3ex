@@ -54,7 +54,7 @@
         WHERE id = #{id}
     </update>
 
-    <select id="selectMessages" parameterType="com.xhystc.v3ex.model.vo.query.MessageQueryCondition" resultMap="messageResultMapper">
+    <select id="selectMessages" parameterType="map" resultMap="messageResultMapper">
         select
         m.*,
         u1.id as from_id,u1.regist_date AS from_regist_date,u1.name AS  from_name,u1.email AS from_email,u1.iconUrl AS from_iconUrl,u1.password AS from_password,u1.salt AS from_salt,u1.is_locked AS from_is_locked,

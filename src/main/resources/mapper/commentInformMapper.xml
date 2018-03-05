@@ -42,16 +42,12 @@
     <select id="getCommentInformById" parameterType="java.lang.String" resultMap="commentInformResultMapper">
         SELECT c.*,u.*,u.id as uid FROM comment_inform c LEFT JOIN user u ON c.last_comment_user = u.id WHERE c.id = #{arg0}
     </select>
-    <select id="selectCommentInform" parameterType="com.xhystc.v3ex.model.vo.query.CommentInformQueryCondition"
-            resultMap="commentInformResultMapper">
+    <select id="selectCommentInform" parameterType="map" resultMap="commentInformResultMapper">
         SELECT c.*,u.*,u.id AS uid FROM comment_inform c
         LEFT JOIN user u ON c.last_comment_user = u.id
         <where>
         <if test="id != null and id >0">
             c.id = #{id}
-        </if>
-        <if test="commentCount != 0">
-            and comment_count > #{commentCount}
         </if>
         <if test="lastCommentTime != null">
             and last_comment_time > #{lastCommentTime}

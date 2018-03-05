@@ -1,10 +1,10 @@
 package com.xhystc.v3ex.dao;
 
 import com.xhystc.v3ex.model.Comment;
-import com.xhystc.v3ex.model.vo.query.CommentQueryCondition;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 
 @Component
 public interface CommentDao
@@ -17,7 +17,7 @@ public interface CommentDao
 
 	int insertComment(Comment comment);
 
-	List<Comment> selectComments(CommentQueryCondition condition);
+	List<Comment> selectComments(Map<String,Object> condition);
 }
 
 

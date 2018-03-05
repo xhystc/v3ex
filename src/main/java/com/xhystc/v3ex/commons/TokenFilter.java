@@ -12,7 +12,7 @@ import java.util.UUID;
 public class TokenFilter implements Filter
 {
 	private List<String> tokenPath = new ArrayList<>();
-	private List<String> excludedPrefix = new ArrayList<>();;
+	private List<String> excludedPrefix = new ArrayList<>();
 	private String redirect="/index";
 	private String tokenParam = "formToken";
 	private static final String FORM_TOKEN_KEY = "xhystc-form-token-key";
@@ -34,16 +34,18 @@ public class TokenFilter implements Filter
 
 
 		for(String s : excludedPrefix){
-			if (path.startsWith(s) || path.contains("service")){
+			if (path.startsWith(s)){
 				filterChain.doFilter(servletRequest,servletResponse);
 				return;
 			}
 		}
 
-		if(tokenPath.contains(path)){
-			if(!validateToken(request.getParameter(tokenParam),session)){
-				response.sendRedirect(redirect);
-				return;
+		for(String s : tokenPath){
+			if(path.contains(s)){
+				if(!validateToken(request.getParameter(tokenParam),session)){
+					response.sendRedirect(((HttpServletRequest) servletRequest).getContextPath()+redirect);
+					return;
+				}
 			}
 		}
 

@@ -37,7 +37,7 @@
         WHERE id = #{id}
     </update>
 
-    <select id="selectUsers" parameterType="com.xhystc.v3ex.model.vo.query.QuestionQueryCondition" resultMap="userResultMap">
+    <select id="selectUsers" parameterType="map" resultMap="userResultMap">
         SELECT * FROM user
         <where>
             <if test="username != null">
@@ -53,6 +53,12 @@
                 </foreach>
             </if>
         </where>
+    </select>
+    <select id="getUsersByUsernamePrefix" resultMap="com.xhystc.v3ex.dao.UserDao.userResultMap">
+        SELECT * FROM user WHERE name LIKE '${_parameter}%';
+    </select>
+    <select id="getUserByEmail" resultMap="com.xhystc.v3ex.dao.UserDao.userResultMap">
+        SELECT * FROM user WHERE user.email = #{_parameter};
     </select>
 
 </mapper>

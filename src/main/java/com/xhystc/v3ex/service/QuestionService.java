@@ -11,9 +11,7 @@ public interface QuestionService
 	Question getQuestionById(Long id);
 	List<Question> getQuestions(Long tagId,int page,int pageSize);
 	Long publishQuetion(User user, QuestionForm form);
-	void upQuestion(Question question);
 	int total(Long tag);
-	void storeQuestions();
 }
 
 

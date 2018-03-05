@@ -3,7 +3,6 @@ package com.xhystc.v3ex.test.dao;
 import com.xhystc.v3ex.dao.MessageDao;
 import com.xhystc.v3ex.dao.UserDao;
 import com.xhystc.v3ex.model.Message;
-import com.xhystc.v3ex.model.vo.query.MessageQueryCondition;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RunWith(SpringJUnit4ClassRunner.class)  //使用junit4进行测试
 @ContextConfiguration(locations = {"classpath:conf/applicationContext.xml", "classpath:conf/applicationContext-mybatis.xml"})
@@ -69,8 +70,8 @@ public class MessageDaoTest
 	@Rollback(false)
 	public void selectMessage() throws Exception
 	{
-		MessageQueryCondition condition = new MessageQueryCondition();
-		condition.setConversation("4_5");
+		Map<String,Object> condition = new HashMap<>(2);
+		condition.put("onversation","4_5");
 		List<Message> messages = messageDao.selectMessages(condition);
 		for(Message message : messages){
 			System.out.println(message.getFrom().getName()+"->"+message.getTo().getName()+" "+message.getContent()+" "+message.getSendDate());

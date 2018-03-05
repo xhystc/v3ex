@@ -19,13 +19,6 @@ public class Question implements Serializable,Votable,Commentable
 	private CommentInform commentInform;
 	private boolean isVoted;
 
-	public String getActiveTimeShowString(){
-		DateFormat format = new SimpleDateFormat("yyyy年MM月dd日 HH时mm分ss秒");
-		if (this.getCommentInform().getLastCommentTime()==null){
-			return "";
-		}
-		return format.format(this.getCommentInform().getLastCommentTime());
-	}
 
 	public Long getId()
 	{
@@ -125,7 +118,7 @@ public class Question implements Serializable,Votable,Commentable
 	@Override
 	public EntityType type()
 	{
-		return EntityType.question;
+		return EntityType.QUESTION;
 	}
 
 	@Override
