@@ -4,7 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.xhystc.v3ex.async.Event;
 import com.xhystc.v3ex.async.EventType;
 import com.youbenzi.mdtool.tool.MDTool;
-import org.markdownj.MarkdownProcessor;
+
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 

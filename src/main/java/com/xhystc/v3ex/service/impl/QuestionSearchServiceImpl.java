@@ -1,11 +1,13 @@
 package com.xhystc.v3ex.service.impl;
 
+import com.xhystc.v3ex.async.handler.QuestionRankUpdateHandler;
 import com.xhystc.v3ex.commons.QuestionRankUtils;
 import com.xhystc.v3ex.commons.RedisUtils;
 import com.xhystc.v3ex.dao.QuestionDao;
 import com.xhystc.v3ex.dao.TagDao;
 import com.xhystc.v3ex.dao.solr.SolrDao;
 import com.xhystc.v3ex.model.Question;
+import com.xhystc.v3ex.model.vo.SolrHighLightInform;
 import com.xhystc.v3ex.model.vo.SolrSearchResult;
 import com.xhystc.v3ex.service.QuestionSearchService;
 import org.apache.log4j.Logger;
@@ -23,7 +25,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @Component
-public class QuestionSearchServiceImpl implements QuestionSearchService,InitializingBean,Runnable
+public class QuestionSearchServiceImpl implements QuestionSearchService, InitializingBean, Runnable
 {
 	static private final Logger logger = Logger.getLogger(QuestionSearchServiceImpl.class);
 
@@ -32,9 +34,11 @@ public class QuestionSearchServiceImpl implements QuestionSearchService,Initiali
 	private long timeout = 60;
 	private JedisPool jedisPool;
 	private TagDao tagDao;
+	@Autowired
+	QuestionRankUpdateHandler handler;
 
 	@Autowired
-	public QuestionSearchServiceImpl(SolrDao solrDao,QuestionDao questionDao,TagDao tagDao,JedisPool jedisPool)
+	public QuestionSearchServiceImpl(SolrDao solrDao, QuestionDao questionDao, TagDao tagDao, JedisPool jedisPool)
 	{
 		this.solrDao = solrDao;
 		this.questionDao = questionDao;
@@ -43,43 +47,51 @@ public class QuestionSearchServiceImpl implements QuestionSearchService,Initiali
 	}
 
 	@Override
-	public List<Question> searchQuestions(String queryString, String tag, int start, int rows)
+	public SolrSearchResult searchQuestions(String queryString, String tag, int start, int rows)
 	{
 		queryString = ClientUtils.escapeQueryChars(queryString);
-		List<SolrSearchResult> result = solrDao.queryQuestion(queryString,tag,start,rows);
-		if(result.size()<=0)
+		SolrSearchResult result = solrDao.queryQuestion(queryString, tag, start, rows);
+		if (result.getTotal() <= 0)
 		{
-			return Collections.emptyList();
+			return result;
 		}
 
-		Map<String,Object> condition = new HashMap<>(1);
-		Set<Long> ids = new HashSet<>(result.size());
-		for(SolrSearchResult res : result){
+		Map<String, Object> condition = new HashMap<>(1);
+		Set<Long> ids = new HashSet<>((int) result.getTotal());
+		for (SolrHighLightInform res : result.getHighLightInforms())
+		{
 			ids.add(res.getId());
 		}
-		condition.put("include",ids);
-		List<Question> questions = questionDao.selectQuestions(condition);
-		List<Question> ret = new ArrayList<>(questions.size());
-		for(SolrSearchResult res :result){
-			for(Question question : questions){
-				if(question.getId().equals(res.getId())){
-					if(res.getContentHighlight()!=null){
+		condition.put("include", ids);
+		List<Question> qs = questionDao.selectQuestions(condition);
+		List<Question> questions = new ArrayList<>(qs.size());
+
+		for (SolrHighLightInform res : result.getHighLightInforms())
+		{
+			for (Question question : qs)
+			{
+				if (question.getId().equals(res.getId()))
+				{
+					if (res.getContentHighlight() != null)
+					{
 						question.setContent(res.getContentHighlight());
 					}
-					if(res.getTitleHighlight()!=null){
+					if (res.getTitleHighlight() != null)
+					{
 						question.setTitle(res.getTitleHighlight());
 					}
-					ret.add(question);
-					questions.remove(question);
+					questions.add(question);
+					qs.remove(question);
 					break;
 				}
 			}
 		}
-		return ret;
+		result.setQuestions(questions);
+		return result;
 	}
 
 	@Override
-	public boolean addQuestion(Long questionId,double score)
+	public boolean addQuestion(Long questionId, double score)
 	{
 		Question question = questionDao.getQuestionById(questionId);
 		return question != null && solrDao.addQuestion(question, score);
@@ -94,7 +106,7 @@ public class QuestionSearchServiceImpl implements QuestionSearchService,Initiali
 	@Override
 	public boolean updateQuestion(Long questionId, String field, String value)
 	{
-		return solrDao.updateQuestion(questionId,field,value);
+		return solrDao.updateQuestion(questionId, field, value);
 	}
 
 
@@ -102,25 +114,29 @@ public class QuestionSearchServiceImpl implements QuestionSearchService,Initiali
 	public void run()
 	{
 		logger.debug("solr time out");
-		try(Jedis redis = jedisPool.getResource())
+		try (Jedis redis = jedisPool.getResource())
 		{
 			Set<String> ids = redis.smembers(RedisUtils.questionScoreModityKey());
 			redis.del(RedisUtils.questionScoreModityKey());
-			for(String s : ids){
+			for (String s : ids)
+			{
 				Long id = Long.decode(s);
-				double score = QuestionRankUtils.currentQuestionRankScore(id,redis);
-				if(score<=0){
+				double score = QuestionRankUtils.currentQuestionRankScore(id, redis);
+				if (score <= 0)
+				{
 					return;
 				}
 				Question question = questionDao.getQuestionById(id);
-				if(question ==null) {
+				if (question == null)
+				{
 					return;
 				}
-				logger.debug("score:"+score);
-				solrDao.addQuestion(question,score);
+				logger.debug("score:" + score);
+				solrDao.addQuestion(question, score);
 			}
 
-		}catch (Exception e){
+		} catch (Exception e)
+		{
 			logger.info(e.getMessage());
 		}
 	}
@@ -135,7 +151,7 @@ public class QuestionSearchServiceImpl implements QuestionSearchService,Initiali
 			t.setDaemon(true);
 			return t;
 		});
-		service.scheduleWithFixedDelay(this,timeout,timeout, TimeUnit.SECONDS);
+		service.scheduleWithFixedDelay(this, timeout, timeout, TimeUnit.SECONDS);
 	}
 
 	public SolrDao getSolrDao()

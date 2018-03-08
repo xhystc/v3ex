@@ -3,18 +3,15 @@ package com.xhystc.v3ex.test.dao;
 import com.xhystc.v3ex.commons.QuestionRankUtils;
 import com.xhystc.v3ex.dao.QuestionDao;
 import com.xhystc.v3ex.dao.solr.SolrDao;
-import com.xhystc.v3ex.model.EntityType;
 import com.xhystc.v3ex.model.Question;
-import com.xhystc.v3ex.model.vo.SolrSearchResult;
+import com.xhystc.v3ex.model.vo.SolrHighLightInform;
 import com.xhystc.v3ex.service.CommentService;
 import com.xhystc.v3ex.service.VoteService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -51,23 +48,7 @@ public class SolrDaoTest
 		solrDao.addQuestion(question,9.32D);
 	}
 
-	@Test
-	public void queryQuestion(){
-		List<SolrSearchResult> result = solrDao.queryQuestion("",null,0,10);
-		Map<String,Object> condition = new HashMap<>();
-		Set<Long> ids = new HashSet<>(result.size());
-		for(SolrSearchResult res : result){
-			ids.add(res.getId());
-		}
-		condition.put("include",ids);
-		List<Question> questions = questionDao.selectQuestions(condition);
-		List<Question> ret = new ArrayList<>(questions.size());
 
-
-		for (Question question : ret){
-			System.out.println("id:"+question.getId()+question.getTitle());
-		}
-	}
 	@Test
 	public void updateQuestion(){
 		solrDao.updateQuestion(2L,"score","100");

@@ -1,43 +1,45 @@
 package com.xhystc.v3ex.model.vo;
 
+import com.xhystc.v3ex.model.Question;
+
+import java.util.List;
+
 public class SolrSearchResult
 {
-	private Long id;
-	private String titleHighlight;
-	private String contentHighlight;
+	private long total;
+	private List<SolrHighLightInform> highLightInforms;
+	private List<Question> questions ;
 
-
-	public Long getId()
+	public long getTotal()
 	{
-		return id;
+		return total;
 	}
 
-	public void setId(Long id)
+	public void setTotal(long total)
 	{
-		this.id = id;
+		this.total = total;
 	}
 
-	public String getTitleHighlight()
+	public List<SolrHighLightInform> getHighLightInforms()
 	{
-		return titleHighlight;
+		return highLightInforms;
 	}
 
-	public void setTitleHighlight(String titleHighlight)
+	public void setHighLightInforms(List<SolrHighLightInform> highLightInforms)
 	{
-		this.titleHighlight = titleHighlight;
+		this.highLightInforms = highLightInforms;
 	}
 
-	public String getContentHighlight()
+	public List<Question> getQuestions()
 	{
-		return contentHighlight;
+		return questions;
 	}
 
-	public void setContentHighlight(String contentHighlight)
+	public void setQuestions(List<Question> questions)
 	{
-		this.contentHighlight = contentHighlight;
+		this.questions = questions;
 	}
 }
-
 
 
 

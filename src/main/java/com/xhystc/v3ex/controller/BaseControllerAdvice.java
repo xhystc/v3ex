@@ -3,7 +3,6 @@ package com.xhystc.v3ex.controller;
 import com.alibaba.fastjson.JSON;
 import org.apache.log4j.Logger;
 import org.apache.shiro.authz.AuthorizationException;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 

@@ -7,7 +7,7 @@
                         http://www.springframework.org/schema/context/spring-context-3.0.xsd ">
     <context:component-scan base-package="com.xhystc.v3ex.dao.solr"/>
     <bean id="solrClientBuilder" class="org.apache.solr.client.solrj.impl.HttpSolrClient.Builder">
-        <constructor-arg value="http://localhost:8983/solr/v3ex"/>
+        <constructor-arg value="http://47.94.128.152:8983/solr/v3ex"/>
     </bean>
     <bean id="solrDao" class="com.xhystc.v3ex.dao.solr.SolrDaoImpl">
         <property name="client" value="#{solrClientBuilder.build()}"/>

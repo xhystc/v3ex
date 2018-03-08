@@ -14,7 +14,7 @@
                 <c:forEach items="${pageButtons}" var="index">
                   <c:choose>
                       <c:when test="${index != 0}">
-                          <a href="?<c:if test='${not empty currentTag}'>tagId=${currentTag}&</c:if>page=${index}"
+                          <a href="?<c:if test='${not empty currentParam}'>${currentParam}&</c:if>page=${index}"
                                   <c:choose>
                                       <c:when test="${currentPage eq index}">
                                           class="page_current"
@@ -56,7 +56,7 @@
                             <c:when test="${currentPage != 1}">
                                 <td width="50%" align="center" class="super normal button"
                                     style="border-right: none; border-top-right-radius: 0px; border-bottom-right-radius: 0px;"
-                                    onclick="location.href='?page=${currentPage-1}';" onmouseover="$(this).addClass('hover_now');"
+                                    onclick="location.href='?<c:if test='${not empty currentParam}'>${currentParam}&</c:if>page=${currentPage-1}';" onmouseover="$(this).addClass('hover_now');"
                                     onmousedown="$(this).addClass('active_now');"
                                     onmouseleave="$(this).removeClass('hover_now'); $(this).removeClass('active_now');"
                                     title="上一页">❮
@@ -73,7 +73,7 @@
                             <c:when test="${currentPage != lastPage}">
                                 <td width="50%" align="center" class="super normal button"
                                     style="border-right: none; border-top-right-radius: 0px; border-bottom-right-radius: 0px;"
-                                    onclick="location.href='?page=${currentPage+1}';" onmouseover="$(this).addClass('hover_now');"
+                                    onclick="location.href='?<c:if test='${not empty currentParam}'>${currentParam}&</c:if>page=${currentPage+1}';" onmouseover="$(this).addClass('hover_now');"
                                     onmousedown="$(this).addClass('active_now');"
                                     onmouseleave="$(this).removeClass('hover_now'); $(this).removeClass('active_now');"
                                     title="下一页">❯

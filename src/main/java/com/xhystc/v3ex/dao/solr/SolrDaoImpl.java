@@ -1,6 +1,7 @@
 package com.xhystc.v3ex.dao.solr;
 
 import com.xhystc.v3ex.model.Question;
+import com.xhystc.v3ex.model.vo.SolrHighLightInform;
 import com.xhystc.v3ex.model.vo.SolrSearchResult;
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -22,9 +23,10 @@ public class SolrDaoImpl implements SolrDao
 	private static final Logger logger = Logger.getLogger(SolrDaoImpl.class);
 
 	@Override
-	public List<SolrSearchResult> queryQuestion(String queryString, String tag, int start, int rows)
+	public SolrSearchResult queryQuestion(String queryString, String tag, int start, int rows)
 	{
-		List<SolrSearchResult> ret = new ArrayList<>(rows);
+		SolrSearchResult ret = new SolrSearchResult();
+		List<SolrHighLightInform> res = new ArrayList<>(rows);
 		QueryResponse queryResponse;
 		SolrQuery query = new SolrQuery(queryString);
 		if(!StringUtils.isEmpty(tag)){
@@ -38,23 +40,28 @@ public class SolrDaoImpl implements SolrDao
 		} catch (SolrServerException | IOException e)
 		{
 			logger.info(e.getMessage());
-			return Collections.emptyList();
+			ret.setTotal(0);
+			return ret;
 		}
 		SolrDocumentList documents = queryResponse.getResults();
 		if(documents==null){
-			return Collections.emptyList();
+			ret.setTotal(0);
+			return ret;
 		}
+
 		Map<String,Map<String,List<String>>> highlight = queryResponse.getHighlighting();
+		ret.setTotal(documents.getNumFound());
 		for (SolrDocument document : documents){
-			SolrSearchResult res = new SolrSearchResult();
+			SolrHighLightInform inform = new SolrHighLightInform();
 			String id = document.getFieldValue("id").toString();
 			Map<String,List<String>> hl = highlight.get(id);
-			res.setId(Long.decode(id));
-			res.setContentHighlight(hl.get("content")!=null?hl.get("content").get(0):null);
-			res.setTitleHighlight(hl.get("title")!=null?hl.get("title").get(0):null);
+			inform.setId(Long.decode(id));
+			inform.setContentHighlight(hl.get("content")!=null?hl.get("content").get(0):null);
+			inform.setTitleHighlight(hl.get("title")!=null?hl.get("title").get(0):null);
 
-			ret.add(res);
+			res.add(inform);
 		}
+		ret.setHighLightInforms(res);
 		return ret;
 	}
 

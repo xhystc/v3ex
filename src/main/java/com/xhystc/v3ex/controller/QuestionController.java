@@ -9,7 +9,6 @@ import com.xhystc.v3ex.model.Question;
 import com.xhystc.v3ex.model.User;
 import com.xhystc.v3ex.model.vo.form.QuestionForm;
 import com.xhystc.v3ex.service.*;
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.log4j.Logger;
 import org.apache.shiro.authz.annotation.RequiresRoles;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,7 +73,7 @@ public class QuestionController
 		commentService.fetchComments(questions);
 		model.addAttribute("questions", questions);
 		model.addAttribute("tags",tagService.getAllTag());
-		model.addAttribute("currentTag",tagId);
+		model.addAttribute("currentParam","tagId="+tagId);
 		int total = questionService.total(tagId);
 		int lastPage =total/pageSize+(total%pageSize>0?1:0);
 		model.addAttribute("pageButtons", CommonUtils.pageButtons(page,lastPage));
